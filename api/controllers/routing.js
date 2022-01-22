@@ -154,7 +154,7 @@ folders.forEach(folder => {
 
 if( fs.existsSync(BACKEND_BASE) ){
 	const stats_folder2 = fs.statSync(BACKEND_BASE);
-	if( !stats_folder2.isDirectory() ){
+	if( stats_folder2.isDirectory() ){
 	  const folders2 = fs.readdirSync(BACKEND_BASE);
 	  folders2.forEach(folder => {
 	    try{
