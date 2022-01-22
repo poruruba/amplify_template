@@ -1,12 +1,12 @@
 {
-  "name": "express_template",
+  "name": "amplify_template",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "swagger": "node generate_swagger.js",
-    "build": ""
+    "swagger": "node scripts/generate_swagger.js",
+    "build": "node scripts/copyall.js"
   },
   "keywords": [],
   "author": "",
@@ -24,5 +24,8 @@
     "node-cron": "^3.0.0",
     "path": "^0.12.7",
     "yaml": "^1.10.0"
+  },
+  "devDependencies": {
+    "fs-extra": "^10.0.0"
   }
 }
