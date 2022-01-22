@@ -131,11 +131,11 @@ if( fs.existsSync(fname) ){
 // swagger.yamlの検索
 const folders = fs.readdirSync(CONTROLLERS_BASE);
 folders.forEach(folder => {
-  const stats_dir = fs.statSync(CONTROLLERS_BASE + folder);
-  if( !stats_dir.isDirectory() )
-      return;
-
   try{
+    const stats_dir = fs.statSync(CONTROLLERS_BASE + folder);
+    if( !stats_dir.isDirectory() )
+        return;
+
     const fname = CONTROLLERS_BASE + folder + "/" + TARGET_FNAME;
     if( !fs.existsSync(fname) )
       return;
@@ -157,11 +157,12 @@ if( fs.existsSync(BACKEND_BASE) ){
 	if( !stats_folder2.isDirectory() ){
 	  const folders2 = fs.readdirSync(BACKEND_BASE);
 	  folders2.forEach(folder => {
-	    const stats_dir = fs.statSync(BACKEND_BASE + folder);
-	    if( !stats_dir.isDirectory() )
-	        return;
 	    try{
-	      const fname = BACKEND_BASE + folder + "/src/" + TARGET_FNAME;
+        const stats_dir = fs.statSync(BACKEND_BASE + folder);
+        if( !stats_dir.isDirectory() )
+            return;
+
+        const fname = BACKEND_BASE + folder + "/src/" + TARGET_FNAME;
 	      if( !fs.existsSync(fname) )
 	        return;
 	      const stats_file = fs.statSync(fname);
