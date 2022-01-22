@@ -18,7 +18,7 @@ app.use(logger('dev')); // for development
 app.use(express.json({limit: MAX_DATA_SIZE}));
 app.use(express.urlencoded({ limit: MAX_DATA_SIZE, extended: false }));
 app.use(cookieParser());
-app.use(express.static( path.join(__dirname, 'dist')));
+app.use(express.static( path.join(__dirname, 'public')));
 app.use(cors());
 
 const SESSION_SECRET_KEY = process.env.SESSION_SECRET_KEY || 'secret_key';
