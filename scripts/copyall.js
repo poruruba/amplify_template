@@ -1,5 +1,5 @@
 const fse = require('fs-extra');
 
-const THIS_BASE_PATH = __dirname;
+const THIS_BASE_PATH = __dirname + "/..";
 
-fse.copySync(THIS_BASE_PATH + "/../public", THIS_BASE_PATH + "/../dist");
+fse.copySync(THIS_BASE_PATH + "/public", THIS_BASE_PATH + "/dist");

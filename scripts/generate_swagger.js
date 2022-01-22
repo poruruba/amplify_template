@@ -1,13 +1,13 @@
 'use strict';
 
-const THIS_BASE_PATH = __dirname;
+const THIS_BASE_PATH = __dirname + "/..";
 const DEFAULT_HELPER_BASE = THIS_BASE_PATH + "/api/helpers/";
 const HELPER_BASE = DEFAULT_HELPER_BASE;
 
 const CONTROLLERS_BASE = THIS_BASE_PATH + '/api/controllers/';
 const BACKEND_BASE = THIS_BASE_PATH + '/amplify/backend/function/';
-const SWAGGER_BASE_FILE = THIS_BASE_PATH + "/api/swagger/" + SWAGGER_FNAME;
 const SWAGGER_FNAME = "swagger.yaml";
+const SWAGGER_BASE_FILE = THIS_BASE_PATH + "/api/swagger/" + SWAGGER_FNAME;
 
 const fs = require('fs');
 const swagger_utils = require(HELPER_BASE + 'swagger_utils');
@@ -22,14 +22,14 @@ num += swagger_utils.delete_definitions(root);
 
 const folders = fs.readdirSync(CONTROLLERS_BASE);
 folders.forEach(folder =>{
+  try{
   var stats_dir = fs.statSync(CONTROLLERS_BASE + folder);
   if( !stats_dir.isDirectory() )
-    continue;
+      return;
 
-  try{
     fs.statSync(CONTROLLERS_BASE + folder + '/' + SWAGGER_FNAME );
   }catch(error){
-    continue;
+    return;
   }
 
   const file = fs.readFileSync(CONTROLLERS_BASE + folder + '/' + SWAGGER_FNAME, 'utf-8');
@@ -42,12 +42,12 @@ const folders2 = fs.readdirSync(BACKEND_BASE);
 folders2.forEach(folder =>{
   var stats_dir = fs.statSync(BACKEND_BASE + folder);
   if( !stats_dir.isDirectory() )
-    continue;
+    return;
     
   try{
     fs.statSync(BACKEND_BASE + folder + '/src/' + SWAGGER_FNAME );
   }catch(error){
-    continue;
+    return;
   }
 
   const file = fs.readFileSync(BACKEND_BASE + folder + '/src/' + SWAGGER_FNAME, 'utf-8');
