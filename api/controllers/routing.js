@@ -152,27 +152,32 @@ folders.forEach(folder => {
   }
 });
 
-const folders2 = fs.readdirSync(BACKEND_BASE);
-folders2.forEach(folder => {
-  const stats_dir = fs.statSync(BACKEND_BASE + folder);
-  if( !stats_dir.isDirectory() )
-      return;
-  try{
-    const fname = BACKEND_BASE + folder + "/src/" + TARGET_FNAME;
-    if( !fs.existsSync(fname) )
-      return;
-    const stats_file = fs.statSync(fname);
-    if( !stats_file.isFile() )
-      return;
+if( fs.existsSync(BACKEND_BASE) ){
+	const stats_folder2 = fs.statSync(BACKEND_BASE);
+	if( !stats_folder2.isDirectory() ){
+	  const folders2 = fs.readdirSync(BACKEND_BASE);
+	  folders2.forEach(folder => {
+	    const stats_dir = fs.statSync(BACKEND_BASE + folder);
+	    if( !stats_dir.isDirectory() )
+	        return;
+	    try{
+	      const fname = BACKEND_BASE + folder + "/src/" + TARGET_FNAME;
+	      if( !fs.existsSync(fname) )
+	        return;
+	      const stats_file = fs.statSync(fname);
+	      if( !stats_file.isFile() )
+	        return;
 
-    // swagger.yamlの解析
-    const swagger = yaml.parseDocument(fs.readFileSync(fname, 'utf-8'));
-    parse_swagger_yaml(swagger, BACKEND_BASE + folder + "/src", folder);
-  }catch(error){
-    console.log(error);
-    return;
-  }
-});
+	      // swagger.yamlの解析
+	      const swagger = yaml.parseDocument(fs.readFileSync(fname, 'utf-8'));
+	      parse_swagger_yaml(swagger, BACKEND_BASE + folder + "/src", folder);
+	    }catch(error){
+	      console.log(error);
+	      return;
+	    }
+	  });
+	}
+}
 
 function parse_swagger_method(docMethod) {
   // デフォルト値
