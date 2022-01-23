@@ -31,7 +31,7 @@ app.use(session({
 
 process.env.THIS_BASE_PATH = __dirname;
 console.log('THIS_BASE_PATH: ' + process.env.THIS_BASE_PATH);
-process.env.DEFAULT_HELPER_BASE = process.env.THIS_BASE_PATH + "/api/helpers/";
+process.env.HELPER_BASE = process.env.THIS_BASE_PATH + "/api/helpers/opt/";
 
 // swagger.yamlの検索
 const routing = require(process.env.THIS_BASE_PATH + '/api/controllers/routing');

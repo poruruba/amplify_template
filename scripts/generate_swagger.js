@@ -1,8 +1,7 @@
 'use strict';
 
 const THIS_BASE_PATH = __dirname + "/..";
-const DEFAULT_HELPER_BASE = THIS_BASE_PATH + "/api/helpers/";
-const HELPER_BASE = DEFAULT_HELPER_BASE;
+const HELPER_BASE = THIS_BASE_PATH + "/api/helpers/opt/";
 
 const CONTROLLERS_BASE = THIS_BASE_PATH + '/api/controllers/';
 const BACKEND_BASE = THIS_BASE_PATH + '/amplify/backend/function/';

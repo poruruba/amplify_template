@@ -1,6 +1,6 @@
 'use strict';
 
-const HELPER_BASE = process.env.HELPER_BASE || process.env.DEFAULT_HELPER_BASE;
+const HELPER_BASE = process.env.HELPER_BASE || "/opt/";
 
 exports.handler = async (event, context) => {
   console.log(event);
