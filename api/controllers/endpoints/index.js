@@ -2,7 +2,7 @@
 
 const THIS_BASE_PATH = process.env.THIS_BASE_PATH;
 
-const HELPER_BASE = process.env.HELPER_BASE || process.env.DEFAULT_HELPER_BASE;
+const HELPER_BASE = process.env.HELPER_BASE || "/opt/";
 const Response = require(HELPER_BASE + 'response');
 const TextResponse = require(HELPER_BASE + 'textresponse');
 
