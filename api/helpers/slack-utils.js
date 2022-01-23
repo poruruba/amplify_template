@@ -1,11 +1,12 @@
 'use strict';
 
 const fetch = require('node-fetch');
-const { WebClient } = require('@slack/web-api');
+//const { WebClient } = require('@slack/web-api');
 
 class SlackUtils{
-    constructor(verification_token, access_token){
-        this.web = new WebClient(access_token);
+    constructor(webclient, verification_token){
+//        this.web = new WebClient(access_token);
+        this.web = webclient;
         this.verification_token = verification_token;
         this.map = new Map();
     }
