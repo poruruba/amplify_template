@@ -81,12 +81,12 @@ function parse_mqtt() {
         if(result){
           const context = { topic: topic, mqtt: mqtt_client, isBase64Encoded: item.isBase64Encoded };
           if (item.isBase64Encoded )
-            item.proc(message.toString('base64'), context)
+            item.proc(JSON.stringify({ payload: message.toString('base64'), topic: topic }), context)
             .catch(error =>{
               console.log(error);
             });
           else
-            item.proc(message.toString(), context)
+            item.proc(JSON.stringify({ payload: message.toString(), topic: topic }), context)
             .catch(error =>{
               console.log(error);
             });
