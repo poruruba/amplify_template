@@ -29,7 +29,7 @@ class LambdaProxy{
       });
 
       callback(null, {
-        StatusCode: 200,
+        StatusCode: 202,
         Payload: ""
       });
     }else
