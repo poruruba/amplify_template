@@ -8,7 +8,7 @@ class LambdaProxy{
 
   invoke(params, callback){
     if(params.InvocationType == 'RequestResponse'){
-      do_post( this.base_url + params.FunctionName, params.body )
+      do_post( this.base_url + params.FunctionName, JSON.parse(params.Payload) )
       .then(response =>{
         callback(null, {
           StatusCode: 200,
@@ -20,7 +20,7 @@ class LambdaProxy{
       });
     }else
     if( params.InvocationType == 'Event' ){
-      do_post( this.base_url + params.FunctionName, params.body )
+      do_post( this.base_url + params.FunctionName, JSON.parse(params.Payload) )
       .then(response =>{
         console.log("LambdaProxy", response);
       })
