@@ -32,6 +32,12 @@ class LambdaProxy{
         StatusCode: 200,
         Payload: ""
       });
+    }else
+    if( params.InvocationType == "DryRun" ){
+      callback(null, {
+        StatusCode: 200,
+        Payload: ""
+      });
     }
   }
 }
