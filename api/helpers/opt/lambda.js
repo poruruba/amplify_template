@@ -1,59 +1,135 @@
-const fetch = require('node-fetch');
-const Headers = fetch.Headers;
+'use strict';
 
-class LambdaProxy{
-  constructor(base_url){
-    this.base_url = base_url;
-  }
+const THIS_BASE_PATH = process.env.THIS_BASE_PATH;
+const CONTROLLERS_BASE = THIS_BASE_PATH + '/api/controllers/';
 
-  invoke(params, callback){
-    if(params.InvocationType == 'RequestResponse'){
-      do_post( this.base_url + params.FunctionName, JSON.parse(params.Payload) )
-      .then(response =>{
+function lambdaInvoke(params, callback){
+  if(params.InvocationType == 'RequestResponse'){
+    var returned = false;
+    var return_response = (ret) =>{
+      if( !returned ){
+        returned = true;
         callback(null, {
           StatusCode: 200,
-          Payload: JSON.stringify(response)
+          Payload: JSON.stringify(ret)
         });
-      })
-      .catch(error =>{
-        callback(error);
-      });
-    }else
-    if( params.InvocationType == 'Event' ){
-      do_post( this.base_url + params.FunctionName, JSON.parse(params.Payload) )
-      .then(response =>{
-        console.log("LambdaProxy", response);
-      })
-      .catch(error =>{
-        console.error("LambdaProxy", error);
-      });
+      }
+    };
+    var return_error = (err) =>{
+      if( !returned ){
+        returned = true;
+        callback(err);
+      }
+    };
 
-      callback(null, {
-        StatusCode: 202,
-        Payload: ""
+    try{
+      var folder = CONTROLLERS_BASE + params.FunctionName;
+      var func = require(folder).handler;
+
+      const context = {
+        succeed: (msg) => {
+            console.log('succeed called');
+            return_response(msg);
+        },
+        fail: (error) => {
+            console.log('failed called');
+            return_error(error);
+        },
+      };
+
+      const task = func(JSON.parse(params.Payload), context, (error, response) =>{
+        console.log('callback called');
+        if( error )
+          return_error(error);
+        else
+          return_response(response);
       });
-    }else
-    if( params.InvocationType == "DryRun" ){
-      callback(null, {
-        StatusCode: 200,
-        Payload: ""
-      });
+      if( task instanceof Promise || (task && typeof task.then === 'function') ){
+        return task.then(ret =>{
+          if( ret ){
+              console.log('promise is called');
+              return_response(ret);
+          }else{
+              console.log('promise return undefined');
+          }
+        })
+        .catch(err =>{
+            console.log('error throwed: ' + err);
+            return_error(err);
+        });
+      }
+    }catch(error){
+      return_error(error);
     }
+  }else
+  if( params.InvocationType == 'Event' ){
+    callback(null, {
+      StatusCode: 202,
+      Payload: ""
+    });
+    
+    var returned = false;
+    var return_response = (ret) =>{
+      if( !returned ){
+        returned = true;
+        console.log("LambdaProxy OK:", ret);
+      }
+    };
+    var return_error = (err) =>{
+      if( !returned ){
+        returned = true;
+        console.log("LambdaProxy Error:", err);
+      }
+    };
+
+    try{
+      var folder = CONTROLLERS_BASE + params.FunctionName;
+      var func = require(folder).handler;
+
+      const context = {
+        succeed: (msg) => {
+            console.log('succeed called');
+            return_response(msg);
+        },
+        fail: (error) => {
+            console.log('failed called');
+            return_error(error);
+        },
+      };
+
+      const task = func(JSON.parse(params.Payload), context, (error, response) =>{
+        console.log('callback called');
+        if( error )
+          return_error(error);
+        else
+          return_response(response);
+      });
+      if( task instanceof Promise || (task && typeof task.then === 'function') ){
+        task.then(ret =>{
+          if( ret ){
+              console.log('promise is called');
+              return_response(ret);
+          }else{
+              console.log('promise return undefined');
+          }
+        })
+        .catch(err =>{
+            console.log('error throwed: ' + err);
+            return_error(err);
+        });
+      }
+    }catch(error){
+      return_error(error);
+    }
+  }else
+  if( params.InvocationType == "DryRun" ){
+    callback(null, {
+      StatusCode: 200,
+      Payload: ""
+    });
   }
 }
 
-function do_post(url, body) {
-  const headers = new Headers({ "Content-Type": "application/json" });
-  return fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(body),
-      headers: headers
-    })
-    .then((response) => {
-      if (!response.ok)
-        throw 'status is not 200';
-      return response.json();
-    });
-}
-
-module.exports = LambdaProxy;
+module.exports = {
+  invoke: lambdaInvoke
+};
