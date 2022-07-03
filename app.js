@@ -44,6 +44,9 @@ require(process.env.THIS_BASE_PATH + '/api/controllers/routing_mqtt');
 // cron.jsonの検索
 require(process.env.THIS_BASE_PATH + '/api/controllers/routing_cron');
 
+// udp.jsonの検索
+require(process.env.THIS_BASE_PATH + '/api/controllers/routing_udp');
+
 app.all('*', function(req, res) {
 //  console.log(req);
   console.log('Unknown Endpoint');
@@ -70,5 +73,5 @@ try{
   servers.listen(sport);
 }catch(error){
 //  console.log(error);
-  console.log('can not load https');
+  console.log("can't load https");
 }
