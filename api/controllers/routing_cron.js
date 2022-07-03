@@ -71,7 +71,7 @@ function parse_cron_json(defs, folder, folder_name) {
     const proc = require(folder)[handler];
 
     cron.schedule(item.schedule, () => proc(item.param));
-    console.log(item.schedule + " cron " + folder_name + ' ' + handler);
+    console.log(item.schedule + " cron " + handler + ' ' + folder_name);
   });
 }
 
