@@ -16,7 +16,7 @@ let mqtt_client;
 
 function parse_mqtt() {
   if( !MQTT_BROKER_URL ){
-    console.log('can not load mqtt');
+    console.log("can't load mqtt");
     return;
   }
 
