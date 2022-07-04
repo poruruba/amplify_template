@@ -101,7 +101,7 @@ if( fs.existsSync(fname) ){
             // x-functype: empty の場合
             nextfunc = (req, res) => res.json({});
           }else{
-            // x-functype: normal|alexa|lambda の場合
+            // x-functype: normal|alexa|lambda|minio の場合
             postprocess = require(CONTROLLERS_BASE + options.operationId)[options.handler];
             nextfunc = routing;
           }
@@ -216,7 +216,7 @@ function parse_swagger_method(docMethod) {
     options.security = docSecurity[0].value.items[0].items[0].key.value;
 
   // オプションタグ: x-functype
-  // x-functype: (express|empty|normal|alexa|lambda)
+  // x-functype: (express|empty|normal|alexa|lambda|minio)
   const docFuncType = docMethod.value.items.filter(item => item.key.value == 'x-functype');
   if (docFuncType.length == 1)
     options.func_type = docFuncType[0].value.value;
@@ -371,12 +371,23 @@ function routing(req, res) {
               requestContext: ( req.requestContext ) ? req.requestContext : {},
               files: req.files,
           };
+          event.requestContext.requestTimeEpoch = new Date().getTime();
       }else
       if( res.func_type == 'alexa' ){
           event = req.body;
       }else
       if( res.func_type == 'lambda' ){
           event = req.body.event;
+      }else
+      if( res.func_type == 'minio' ){
+        for( var record of req.body.Records ){
+          if( record.eventName.startsWith('s3:'))
+            record.eventName = record.eventName.slice(3);
+          record.s3.object.key = decodeURIComponent(record.s3.object.key);
+        }
+        event = {
+          Records: req.body.Records
+        };
       }else{
           console.log('can not found operationId: ' + operationId);
           return_error(res, new Error('can not found operationId'));
