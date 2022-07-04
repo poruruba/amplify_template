@@ -45,7 +45,7 @@ function parse_swagger_yaml(swagger, folder, folder_name)
         // x-functype: empty の場合
         nextfunc = (req, res) => res.json({});
       }else{
-        // x-functype: normal|alexa|lambda の場合
+        // x-functype: normal|alexa|lambda|minio の場合
         postprocess = require(folder)[options.handler];
         nextfunc = routing;
       }
