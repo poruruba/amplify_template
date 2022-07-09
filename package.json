@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node app.js",
     "swagger": "node scripts/generate_swagger.js",
-    "build": "node scripts/copyall.js"
+    "build": "node scripts/copyall.js",
+    "lambda_deploy": "node scripts/lambda_deploy.js"
   },
   "keywords": [],
   "author": "",
@@ -27,6 +28,7 @@
     "yaml": "^1.10.0"
   },
   "devDependencies": {
+    "archiver": "^5.3.1",
     "fs-extra": "^10.0.0"
   }
 }
