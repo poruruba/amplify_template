@@ -27,7 +27,7 @@ async function folderToZip(target_folder) {
 		});
 
 		output.on('close', function () {
-			console.log(CONTROLLERS_BASE + TEMP_FOLDER + ZIP_FNAME + ': ' + archive.pointer() + ' total bytes');
+			console.log(TEMP_FOLDER + ZIP_FNAME + ': ' + archive.pointer() + ' total bytes');
 			resolve();
 		});
 
