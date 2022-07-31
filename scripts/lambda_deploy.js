@@ -18,9 +18,7 @@ const archiver = require('archiver');
 async function folderToZip(target_folder) {
 	try{
 		fs.mkdirSync(TEMP_FOLDER);
-	}catch(error){
-		console.log('temp folder already exists');
-	}
+	}catch(error){}
 
 	return new Promise((resolve, reject) => {
 		const output = fs.createWriteStream(TEMP_FOLDER + ZIP_FNAME);
