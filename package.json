@@ -7,7 +7,7 @@
     "start": "node app.js",
     "swagger": "node scripts/generate_swagger.js",
     "build": "node scripts/copyall.js",
-    "lambda_deploy": "node scripts/lambda_deploy.js",
+    "lambda_upload": "node scripts/lambda_upload.js",
     "lambda_download": "node scripts/lambda_download.js"
   },
   "keywords": [],
