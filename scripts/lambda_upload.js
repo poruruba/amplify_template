@@ -46,7 +46,7 @@ async function folderToZip(target_folder) {
 }
 
 if (process.argv.length < 3) {
-	console.log('usage: npm run lambda_deploy [folder_name]');
+	console.log('usage: npm run lambda_upload [folder_name]');
 	return;
 }
 
@@ -67,7 +67,7 @@ var folder_name = process.argv[2];
 				console.log(err, err.stack);
 				return;
 			}
-			console.log("Lambda Deployed");
+			console.log("Lambda Uploaded");
 			console.log("FunctionName: " + data.FunctionName);
 			console.log("FunctionArn: " + data.FunctionArn);
 			console.log("Runtime: " + data.Runtime);
