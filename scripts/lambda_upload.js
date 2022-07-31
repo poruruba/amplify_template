@@ -3,7 +3,7 @@
 const THIS_BASE_PATH = __dirname + "/..";
 
 const CONTROLLERS_BASE = THIS_BASE_PATH + '/api/controllers/';
-const ZIP_FNAME = 'deploy.zip';
+const ZIP_FNAME = 'lambda_upload.zip';
 
 const AWS = require('aws-sdk');
 AWS.config.update({
