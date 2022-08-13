@@ -1,6 +1,6 @@
 class Response{
-    constructor(context){
-        this.statusCode = 200;
+    constructor(context, statusCode = 200){
+        this.statusCode = statusCode;
         this.headers = {'Access-Control-Allow-Origin' : '*'};
         if( context )
             this.set_body(context);
