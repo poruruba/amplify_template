@@ -55,7 +55,7 @@ function parse_udp_json(defs, folder, folder_name) {
         var task = proc({ body: Buffer.from(message).toString(), remote: remote }, { udp: socket });
         if( task instanceof Promise || (task && typeof task.then === 'function') ){
           task.catch(err =>{
-            console.log(error);
+            console.log(err);
           });
         }
       }catch(error){
