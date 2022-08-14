@@ -51,7 +51,11 @@ function parse_udp_json(defs, folder, folder_name) {
       console.log('udp(' + port + ') error: ' + error);
     });
     socket.on('message', (message, remote) =>{
-      proc({ body: Buffer.from(message).toString(), remote: remote }, { udp: socket });
+      try{
+        proc({ body: Buffer.from(message).toString(), remote: remote }, { udp: socket });
+      }catch(error){
+        console.log(error);
+      }
     });
     socket.bind(port);
 
