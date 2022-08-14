@@ -52,9 +52,14 @@ function parse_udp_json(defs, folder, folder_name) {
     });
     socket.on('message', (message, remote) =>{
       try{
-        proc({ body: Buffer.from(message).toString(), remote: remote }, { udp: socket });
+        var task = proc({ body: Buffer.from(message).toString(), remote: remote }, { udp: socket });
+        if( task instanceof Promise || (task && typeof task.then === 'function') ){
+          task.catch(err =>{
+            console.log(error);
+          });
+        }
       }catch(error){
-        console.log(error);
+          console.log(error);
       }
     });
     socket.bind(port);
