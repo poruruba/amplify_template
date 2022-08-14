@@ -80,16 +80,16 @@ function parse_mqtt() {
         const result = topic.match(item.regexp);
         if(result){
           const context = { mqtt: mqtt_client, isBase64Encoded: item.isBase64Encoded };
+          let task;
           if (item.isBase64Encoded )
-            item.proc({ payload: message.toString('base64'), topic: topic }, context)
-            .catch(error =>{
-              console.log(error);
-            });
+            task = item.proc({ payload: message.toString('base64'), topic: topic }, context);
           else
-            item.proc({ payload: JSON.parse(message.toString()), topic: topic }, context)
-            .catch(error =>{
-              console.log(error);
+            task = item.proc({ payload: JSON.parse(message.toString()), topic: topic }, context);
+          if( task instanceof Promise || (task && typeof task.then === 'function') ){
+            task.catch(err =>{
+              console.log(err);
             });
+          }
         }
       }catch(error){
         console.log(error);
