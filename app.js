@@ -41,11 +41,15 @@ console.log('BasePath: ' + routing.basePath);
 // mqtt.jsonの検索
 require(process.env.THIS_BASE_PATH + '/api/controllers/routing_mqtt');
 
+// udp.jsonの検索
+require(process.env.THIS_BASE_PATH + '/api/controllers/routing_udp');
+
 // cron.jsonの検索
 require(process.env.THIS_BASE_PATH + '/api/controllers/routing_cron');
 
-// udp.jsonの検索
-require(process.env.THIS_BASE_PATH + '/api/controllers/routing_udp');
+// sqs.jsonの検索
+if( process.env.ROUTING_SQS_ENDPOINT )
+  require(process.env.THIS_BASE_PATH + '/api/controllers/routing_sqs');
 
 app.all('*', function(req, res) {
 //  console.log(req);
