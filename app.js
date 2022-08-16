@@ -39,7 +39,8 @@ app.use(routing.basePath, routing.router);
 console.log('BasePath: ' + routing.basePath);
 
 // mqtt.jsonの検索
-require(process.env.THIS_BASE_PATH + '/api/controllers/routing_mqtt');
+if( process.env.MQTT_BROKER_URL )
+  require(process.env.THIS_BASE_PATH + '/api/controllers/routing_mqtt');
 
 // udp.jsonの検索
 require(process.env.THIS_BASE_PATH + '/api/controllers/routing_udp');
