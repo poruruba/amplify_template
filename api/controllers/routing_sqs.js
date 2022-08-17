@@ -3,6 +3,8 @@
 const THIS_BASE_PATH = process.env.THIS_BASE_PATH;
 const CONTROLLERS_BASE = THIS_BASE_PATH + '/api/controllers/';
 
+//const SQS_REGION = "ap-northeast-1";
+const SQS_REGION = "elasticmq";
 const SQS_ENDPOINT = process.env.ROUTING_SQS_ENDPOINT;
 
 const SQS_TARGET_FNAME = "sqs.json";
@@ -10,7 +12,7 @@ const DEFAULT_HANDLER = "handler";
 
 const AWS = require('aws-sdk');
 AWS.config.update({
-	region: 'ap-northeast-1'
+	region: SQS_REGION
 });
 const sqs = new AWS.SQS({
 	apiVersion: '2012-11-05',
@@ -77,51 +79,58 @@ async function continuousReceive(params, func){
 				  if( !data.Messages ){
 				  	return resolve('message empty');
 				  }
-			  	try{
+
+          try{
 			  		const event = {
-			  			Records: data.Messages.map(item => { return {
-			  				messageId: item.MessageId,
-			  				receiptHandle: item.ReceiptHandle,
-			  				body :item.Body,
-			  				attributes: item.Attributes,
-			  				messageAttributes: item.MessageAttributes,
-			  				md5OfBody: item.MD5OfBody,
-			  				md5OfMessageAttributes: item.MD5OfMessageAttributes,
-			  				eventSource: "elasticmq",
-			  				awsRegion: "ap-northeast-1"
-			  			} })
+			  			Records: data.Messages.map(item => {
+                return {
+                  messageId: item.MessageId,
+                  receiptHandle: item.ReceiptHandle,
+                  body :item.Body,
+                  attributes: item.Attributes,
+                  messageAttributes: item.MessageAttributes,
+                  md5OfBody: item.MD5OfBody,
+                  md5OfMessageAttributes: item.MD5OfMessageAttributes,
+                  awsRegion: SQS_REGION
+                }
+              })
 			  		};
+
+            const success_return = (msg) => {
+              if( data.Messages ){
+                const deleteParams = {
+                  QueueUrl: params.QueueUrl,
+                  Entries: data.Messages.map(item => { return { Id: item.MessageId, ReceiptHandle: item.ReceiptHandle } } )
+                };
+                sqs.deleteMessageBatch(deleteParams, (err, data) => {
+                  if (err) {
+                    return reject(err);
+                  } else {
+                    return resolve();
+                  }
+                });
+              }
+            };
             const context = {
-              succeed: (msg) => console.log(msg),
-              fail: (error) => console.log(error)
+              succeed: success_return,
+              fail: (error) => resolve(error)
             };
             const task = func(event, context, (error, response) => {
-              if (error) return console.log(error);
-              return console.log(response);
+              if (error) return resolve(error);
+              return success_return(response);
             });
             if (task instanceof Promise || (task && typeof task.then === 'function')) {
               return task.then(ret => {
                 if (ret)
-                  return console.log(ret);
+                  return success_return(ret);
               })
-              .catch(err => console.log(err));
+              .catch(err => resolve(err));
+            }else{
+              if( task !== undefined )
+                success_return(task);
             }
           }catch(error){
             console.log(error);
-          }finally{
-            if( data.Messages ){
-              const deleteParams = {
-                QueueUrl: params.QueueUrl,
-                Entries: data.Messages.map(item => { return { Id: item.MessageId, ReceiptHandle: item.ReceiptHandle } } )
-              };
-              sqs.deleteMessageBatch(deleteParams, (err, data) => {
-                if (err) {
-                  return reject(err);
-                } else {
-                  return resolve();
-                }
-              });
-            }
           }
 				});
 			});
