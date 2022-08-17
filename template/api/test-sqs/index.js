@@ -5,4 +5,5 @@ const Response = require(HELPER_BASE + 'response');
 
 exports.handler = async (event, context, callback) => {
   console.log('Hello World');
+  return {};
 };
