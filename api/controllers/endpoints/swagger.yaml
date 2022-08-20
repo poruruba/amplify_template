@@ -22,3 +22,19 @@ paths:
           description: Success
           schema:
             type: object
+
+  /sqs:
+    get:
+      responses:
+        200:
+          description: Success
+          schema:
+            type: object
+
+  /udp:
+    get:
+      responses:
+        200:
+          description: Success
+          schema:
+            type: object
