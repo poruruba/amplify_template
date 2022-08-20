@@ -78,136 +78,83 @@ exports.handler = async (event, context, callback) => {
 
     return new Response(root);
   }else
-  if( event.path == '/cron' ){
+  if( event.path == '/endpoints' ){
+    let endpoints = {
+      cron: [],
+      mqtt: [],
+      sqs: [],
+      udp: [],
+    };
+
     const folders = fs.readdirSync(CONTROLLERS_BASE);
-    let root = [];
     folders.forEach(folder => {
       try {
         const stats_dir = fs.statSync(CONTROLLERS_BASE + folder);
         if (!stats_dir.isDirectory())
           return;
 
-        const fname = CONTROLLERS_BASE + folder + "/" + CRON_TARGET_FNAME;
-        if (!fs.existsSync(fname))
-          return;
-        const stats_file = fs.statSync(fname);
-        if (!stats_file.isFile())
-          return;
-
-        const defs = JSON.parse(fs.readFileSync(fname).toString());
-        for(let def of defs){
-          const item = {
-            operationId: folder,
-            schedule: def.schedule,
-            handler: def.handler ? def.handler : DEFAULT_HANDLER,
-            enable: def.enable ? true : false
-          };
-          root.push(item);
+        let fname;
+        let root;
+        
+        root = endpoints.cron;
+        fname = CONTROLLERS_BASE + folder + "/" + CRON_TARGET_FNAME;
+        if (fs.existsSync(fname)){
+          const stats_file = fs.statSync(fname);
+          if (stats_file.isFile()){
+            const defs = JSON.parse(fs.readFileSync(fname).toString());
+            for(let def of defs){
+              const item = {
+                operationId: folder,
+                schedule: def.schedule,
+                handler: def.handler ? def.handler : DEFAULT_HANDLER,
+                enable: def.enable ? true : false
+              };
+              root.push(item);
+            }
+          }
         }
+
+        root = endpoints.sqs;
+        fname = CONTROLLERS_BASE + folder + "/" + SQS_TARGET_FNAME;
+        if (fs.existsSync(fname)){
+          const stats_file = fs.statSync(fname);
+          if (stats_file.isFile()){
+            const defs = JSON.parse(fs.readFileSync(fname).toString());
+            for(let def of defs){
+              const item = {
+                operationId: folder,
+                QueueUrl: def.QueueUrl,
+                handler: def.handler ? def.handler : DEFAULT_HANDLER,
+                enable: def.enable ? true : false
+              };
+              root.push(item);
+            }
+          }
+        }
+
+        root = endpoints.udp;
+        fname = CONTROLLERS_BASE + folder + "/" + UDP_TARGET_FNAME;
+        if (fs.existsSync(fname)){
+          const stats_file = fs.statSync(fname);
+          if (stats_file.isFile()){
+            const defs = JSON.parse(fs.readFileSync(fname).toString());
+            for(let def of defs){
+              const item = {
+                operationId: folder,
+                port: def.port,
+                handler: def.handler ? def.handler : DEFAULT_HANDLER,
+                enable: def.enable ? true : false
+              };
+              root.push(item);
+            }
+          }
+        }
+
       } catch (error) {
         console.log(error);
       }
     });
 
-    return new Response(root);
-  }else
-  if( event.path == '/mqtt' ){
-    let root = [];
-    const folders = fs.readdirSync(CONTROLLERS_BASE);
-    folders.forEach(folder => {
-      const stats_dir = fs.statSync(CONTROLLERS_BASE + folder);
-      if (!stats_dir.isDirectory())
-        return;
-
-      try {
-        const fname = CONTROLLERS_BASE + folder + "/" + MQTT_TARGET_FNAME;
-        if (!fs.existsSync(fname))
-          return;
-        const stats_file = fs.statSync(fname);
-        if (!stats_file.isFile())
-          return;
-
-        const defs = JSON.parse(fs.readFileSync(fname).toString());
-        for(let def of defs){
-          const item = {
-            operationId: folder,
-            topic: def.topic,
-            handler: def.handler ? def.handler : DEFAULT_HANDLER,
-            enable: def.enable ? true : false
-          };
-          root.push(item);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    });
-
-    return new Response(root);
-  }else
-  if( event.path == '/sqs' ){
-    let root = [];
-    const folders = fs.readdirSync(CONTROLLERS_BASE);
-    folders.forEach(folder => {
-      const stats_dir = fs.statSync(CONTROLLERS_BASE + folder);
-      if (!stats_dir.isDirectory())
-        return;
-
-      try {
-        const fname = CONTROLLERS_BASE + folder + "/" + SQS_TARGET_FNAME;
-        if (!fs.existsSync(fname))
-          return;
-        const stats_file = fs.statSync(fname);
-        if (!stats_file.isFile())
-          return;
-
-        const defs = JSON.parse(fs.readFileSync(fname).toString());
-        for(let def of defs){
-          const item = {
-            operationId: folder,
-            QueueUrl: def.QueueUrl,
-            handler: def.handler ? def.handler : DEFAULT_HANDLER,
-            enable: def.enable ? true : false
-          };
-          root.push(item);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    });
-
-    return new Response(root);
-  }else
-  if( event.path == '/udp' ){
-    let root = [];
-    const folders = fs.readdirSync(CONTROLLERS_BASE);
-    folders.forEach(folder => {
-      const stats_dir = fs.statSync(CONTROLLERS_BASE + folder);
-      if (!stats_dir.isDirectory())
-        return;
-
-      try {
-        const fname = CONTROLLERS_BASE + folder + "/" + UDP_TARGET_FNAME;
-        if (!fs.existsSync(fname))
-          return;
-        const stats_file = fs.statSync(fname);
-        if (!stats_file.isFile())
-          return;
-
-        const defs = JSON.parse(fs.readFileSync(fname).toString());
-        for(let def of defs){
-          const item = {
-            operationId: folder,
-            port: def.port,
-            handler: def.handler ? def.handler : DEFAULT_HANDLER,
-            enable: def.enable ? true : false
-          };
-          root.push(item);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    });
-
-    return new Response(root);
+    return new Response(endpoints);
   }
 }
