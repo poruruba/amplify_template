@@ -16,6 +16,7 @@ const CONTROLLERS_BASE = THIS_BASE_PATH + '/api/controllers/';
 const BACKEND_BASE = THIS_BASE_PATH + '/amplify/backend/function/';
 const CRON_TARGET_FNAME = "cron.json";
 const MQTT_TARGET_FNAME = "mqtt.json";
+const SQS_TARGET_FNAME = "sqs.json";
 const SWAGGER_TARGET_FNAME = "swagger.yaml";
 
 exports.handler = async (event, context, callback) => {
@@ -93,49 +94,19 @@ exports.handler = async (event, context, callback) => {
           return;
 
         const defs = JSON.parse(fs.readFileSync(fname).toString());
-        const item = {
-          operationId: folder,
-          schedule: defs.schedule,
-          handler: defs.handler ? defs.handler : DEFAULT_HANDLER,
-          enable: defs.enable ? true : false
-        };
-        root.push(item);
+        for(let def of defs){
+          const item = {
+            operationId: folder,
+            schedule: def.schedule,
+            handler: def.handler ? def.handler : DEFAULT_HANDLER,
+            enable: def.enable ? true : false
+          };
+          root.push(item);
+        }
       } catch (error) {
         console.log(error);
       }
     });
-
-    if( fs.existsSync(BACKEND_BASE) ){
-      const stats_folder2 = fs.statSync(BACKEND_BASE);
-      if( !stats_folder2.isDirectory() ){
-        const folders2 = fs.readdirSync(BACKEND_BASE);
-        folders2.forEach(folder => {
-          try {
-            const stats_dir = fs.statSync(BACKEND_BASE + folder);
-            if (!stats_dir.isDirectory())
-              return;
-
-            const fname = BACKEND_BASE + folder + "/src/" + CRON_TARGET_FNAME;
-            if (!fs.existsSync(fname))
-              return;
-            const stats_file = fs.statSync(fname);
-            if (!stats_file.isFile())
-              return;
-
-            const defs = JSON.parse(fs.readFileSync(fname).toString());
-            const item = {
-              operationId: folder,
-              schedule: defs.schedule,
-              handler: defs.handler ? defs.handler : DEFAULT_HANDLER,
-              enable: defs.enable ? true : false
-            };
-            root.push(item);
-          } catch (error) {
-            console.log(error);
-          }
-        });
-      }
-    }
 
     return new Response(root);
   }else
@@ -156,13 +127,48 @@ exports.handler = async (event, context, callback) => {
           return;
 
         const defs = JSON.parse(fs.readFileSync(fname).toString());
-        const item = {
-          operationId: folder,
-          topic: defs.topic,
-          handler: defs.handler ? defs.handler : DEFAULT_HANDLER,
-          enable: defs.enable ? true : false
-        };
-        root.push(item);
+        for(let def of defs){
+          const item = {
+            operationId: folder,
+            topic: def.topic,
+            handler: def.handler ? def.handler : DEFAULT_HANDLER,
+            enable: def.enable ? true : false
+          };
+          root.push(item);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    return new Response(root);
+  }else
+  if( event.path == '/sqs' ){
+    let root = [];
+    const folders = fs.readdirSync(CONTROLLERS_BASE);
+    folders.forEach(folder => {
+      const stats_dir = fs.statSync(CONTROLLERS_BASE + folder);
+      if (!stats_dir.isDirectory())
+        return;
+
+      try {
+        const fname = CONTROLLERS_BASE + folder + "/" + SQS_TARGET_FNAME;
+        if (!fs.existsSync(fname))
+          return;
+        const stats_file = fs.statSync(fname);
+        if (!stats_file.isFile())
+          return;
+
+        const defs = JSON.parse(fs.readFileSync(fname).toString());
+        for(let def of defs){
+          const item = {
+            operationId: folder,
+            QueueUrl: def.QueueUrl,
+            handler: def.handler ? def.handler : DEFAULT_HANDLER,
+            enable: def.enable ? true : false
+          };
+          root.push(item);
+        }
       } catch (error) {
         console.log(error);
       }
