@@ -33,33 +33,6 @@ function parse_cron() {
       console.log(error);
     }
   });
-
-  if (fs.existsSync(BACKEND_BASE)){
-	  const stats_folder2 = fs.statSync(BACKEND_BASE);
-	  if (stats_folder2.isDirectory()){
-		  const folders2 = fs.readdirSync(BACKEND_BASE);
-		  folders2.forEach(folder => {
-		    try {
-		    const stats_dir = fs.statSync(BACKEND_BASE + folder);
-		    if (!stats_dir.isDirectory())
-		      return;
-
-		      const fname = BACKEND_BASE + folder + "/src/" + CRON_TARGET_FNAME;
-		      if (!fs.existsSync(fname))
-		        return;
-		      const stats_file = fs.statSync(fname);
-		      if (!stats_file.isFile())
-		        return;
-
-		      // cronの登録
-		      const defs = JSON.parse(fs.readFileSync(fname).toString());
-		      parse_cron_json(defs, BACKEND_BASE + folder, folder);
-		    } catch (error) {
-		      console.log(error);
-		    }
-		  });
-	  }
-  }
 }
 
 function parse_cron_json(defs, folder, folder_name) {
