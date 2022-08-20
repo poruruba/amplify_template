@@ -428,7 +428,7 @@ function routing(req, res) {
               }
           })
           .catch(err =>{
-              console.log('error throwed: ' + err);
+              console.log('error throwed:', err);
               return_error(res, err);
           });
       }else{
