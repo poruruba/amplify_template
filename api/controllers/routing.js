@@ -436,7 +436,7 @@ function routing(req, res) {
 //            return_none(res);
       }
   }catch(err){
-      console.log('error throwed: ' + err);
+      console.log('error throwed:', err);
       return_error(res, err);
   }
 }
