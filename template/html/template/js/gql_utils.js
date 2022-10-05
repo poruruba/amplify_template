@@ -1,7 +1,7 @@
 'use strict';
 
 function gql_do_post(url, body, apikey) {
-  const headers = new Headers({ "Content-Type": "application/json; charset=utf-8" });
+  const headers = new Headers({ "Content-Type": "application/json" });
   if( apikey )
     headers.append("x-api-key", apikey);
 
