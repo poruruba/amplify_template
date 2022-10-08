@@ -1,6 +1,7 @@
 'use strict';
 
 //const vConsole = new VConsole();
+//const remoteConsole = new RemoteConsole("http://[remote server]/logio-post");
 //window.datgui = new dat.GUI();
 
 var vue_options = {
