@@ -52,6 +52,10 @@ require(process.env.THIS_BASE_PATH + '/api/controllers/routing_cron');
 if( process.env.ROUTING_SQS_ENDPOINT )
   require(process.env.THIS_BASE_PATH + '/api/controllers/routing_sqs');
 
+// kinesis.jsonの検索
+if( process.env.ROUTING_KINESIS_ENDPOINT )
+  require(process.env.THIS_BASE_PATH + '/api/controllers/routing_kinesis');
+
 app.all('*', function(req, res) {
 //  console.log(req);
   console.log('Unknown Endpoint');
