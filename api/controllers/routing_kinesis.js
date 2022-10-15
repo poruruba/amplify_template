@@ -130,7 +130,7 @@ async function consumLoop(streamName, intervalSec, func){
         eventVersion: "1.0",
         eventId: shardId + ":" + record.SequenceNumber,
         eventName: "aws:kinesis:record",
-        awsRegion: "kinesalite",
+        awsRegion: KINESIS_REGION,
       }
       event.Records.push(item);
     }
