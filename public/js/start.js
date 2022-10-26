@@ -7,6 +7,7 @@
 var vue_options = {
     el: "#top",
     mixins: [mixins_bootstrap],
+    store: vue_store,
     data: {
     },
     computed: {
