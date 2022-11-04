@@ -12,6 +12,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
+const expressWs = require('express-ws')(app);
 
 //app.use(logger('tiny', { stream: fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' }) }));
 app.use(logger('dev')); // for development
@@ -55,6 +56,11 @@ if( process.env.ROUTING_SQS_ENDPOINT )
 // kinesis.jsonの検索
 if( process.env.ROUTING_KINESIS_ENDPOINT )
   require(process.env.THIS_BASE_PATH + '/api/controllers/routing_kinesis');
+
+// ws.jsonの検索
+const routing_ws = require(process.env.THIS_BASE_PATH + '/api/controllers/routing_ws');
+app.use('/', routing_ws.router);
+routing_ws.setWss(expressWs.getWss());
 
 app.all('*', function(req, res) {
 //  console.log(req);
