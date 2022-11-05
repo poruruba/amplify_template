@@ -92,6 +92,15 @@ const methods_bootstrap = {
     },
     make_random: function(max) {
         return Math.floor(Math.random() * (max + 1));
+    },
+    toLocaleString: function(tim){
+        return new Date(tim).toLocaleString();
+    },
+    toLocaleDateString: function(tim){
+        return new Date(tim).toLocaleDateString();
+    },
+    toLocaleTimeString: function(tim){
+        return new Date(tim).toLocaleTimeString();
     }
 };
 
