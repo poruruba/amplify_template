@@ -154,7 +154,8 @@ function parse_ws_json(defs, folder, folder_name) {
           },
           connectionId: connectionId
         },
-        isBase64Encoded: false
+        isBase64Encoded: false,
+        queryStringParameters: req.query,
       };
       connect_handler(event, context);
     }
