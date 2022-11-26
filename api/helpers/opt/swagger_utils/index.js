@@ -22,7 +22,7 @@ function append_paths(root, target, name){
     var children = map.items[i].value.items;
     for( var j = 0 ; j < children.length ; j++ ){
 //      children[j].value.set("x-swagger-router-controller", ROUTING_NAME);
-      children[j].value.set("operationId", name);
+//      children[j].value.set("operationId", name);
       children[j].value.set("x-automount", name);
       if( children[j].value.has('tags') )
         children[j].value.addIn(['tags'], name);
