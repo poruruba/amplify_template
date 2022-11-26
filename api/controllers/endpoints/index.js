@@ -25,14 +25,14 @@ function append_swagger(root, folder, baseFolder, extraFolder){
       const stats_dir = fs.statSync(baseFolder + folder);
       if (!stats_dir.isDirectory())
         return;
-      const stats_file = fs.statSync(baseFolder + folder + '/' + extraFolder + SWAGGER_TARGET_FNAME);
+      const stats_file = fs.statSync(baseFolder + folder + (extraFolder ? ('/' + extraFolder + '/') : '/') + SWAGGER_TARGET_FNAME);
       if (!stats_file.isFile())
         return;
     } catch (error) {
       return;
     }
 
-    const file = fs.readFileSync(baseFolder + folder + '/' + extraFolder + SWAGGER_TARGET_FNAME, 'utf-8');
+    const file = fs.readFileSync(baseFolder + folder + (extraFolder ? ('/' + extraFolder + '/') : '/') + SWAGGER_TARGET_FNAME, 'utf-8');
     const doc = swagger_utils.parse_document(file);
 
     swagger_utils.append_paths(root, doc, folder);
@@ -52,11 +52,11 @@ exports.handler = async (event, context, callback) => {
     swagger_utils.delete_definitions(root);
 
     if( folder ){
-        append_swagger(root, folder, CONTROLLERS_BASE, "");
+        append_swagger(root, folder, CONTROLLERS_BASE);
     }else{
       const folders = fs.readdirSync(CONTROLLERS_BASE);
       folders.forEach(folder => {
-        append_swagger(root, folder, CONTROLLERS_BASE, "");
+        append_swagger(root, folder, CONTROLLERS_BASE);
       });
 
       if( fs.existsSync(BACKEND_BASE) ){
@@ -64,7 +64,7 @@ exports.handler = async (event, context, callback) => {
         if( !stats_folder2.isDirectory() ){
           const folders2 = fs.readdirSync(BACKEND_BASE);
           folders2.forEach(folder => {
-            append_swagger(root, folder, BACKEND_BASE, 'src/');
+            append_swagger(root, folder, BACKEND_BASE, 'src');
           });
         }
       }
