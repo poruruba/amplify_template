@@ -20,8 +20,28 @@ const SQS_TARGET_FNAME = "sqs.json";
 const UDP_TARGET_FNAME = "udp.json";
 const SWAGGER_TARGET_FNAME = "swagger.yaml";
 
+function append_swagger(root, folder, baseFolder, extraFolder){
+    try {
+      const stats_dir = fs.statSync(baseFolder + folder);
+      if (!stats_dir.isDirectory())
+        return;
+      const stats_file = fs.statSync(baseFolder + folder + '/' + extraFolder + SWAGGER_TARGET_FNAME);
+      if (!stats_file.isFile())
+        return;
+    } catch (error) {
+      return;
+    }
+
+    const file = fs.readFileSync(baseFolder + folder + '/' + extraFolder + SWAGGER_TARGET_FNAME, 'utf-8');
+    const doc = swagger_utils.parse_document(file);
+
+    swagger_utils.append_paths(root, doc, folder);
+    swagger_utils.append_definitions(root, doc, folder);
+}
+
 exports.handler = async (event, context, callback) => {
   if( event.path == '/swagger'){
+    const folder = event.queryStringParameters.folder;
     const root_file = fs.readFileSync(SWAGGER_DEFAULT_BASE + SWAGGER_TARGET_FNAME, 'utf-8');
     const root = swagger_utils.parse_document(root_file);
 
@@ -31,48 +51,22 @@ exports.handler = async (event, context, callback) => {
     swagger_utils.delete_paths(root);
     swagger_utils.delete_definitions(root);
 
-    const folders = fs.readdirSync(CONTROLLERS_BASE);
-    folders.forEach(folder => {
-      try {
-        const stats_dir = fs.statSync(CONTROLLERS_BASE + folder);
-        if (!stats_dir.isDirectory())
-          return;
-        const stats_file = fs.statSync(CONTROLLERS_BASE + folder + '/' + SWAGGER_TARGET_FNAME);
-        if (!stats_file.isFile())
-          return;
-      } catch (error) {
-        return;
-      }
+    if( folder ){
+        append_swagger(root, folder, CONTROLLERS_BASE, "");
+    }else{
+      const folders = fs.readdirSync(CONTROLLERS_BASE);
+      folders.forEach(folder => {
+        append_swagger(root, folder, CONTROLLERS_BASE, "");
+      });
 
-      const file = fs.readFileSync(CONTROLLERS_BASE + folder + '/' + SWAGGER_TARGET_FNAME, 'utf-8');
-      const doc = swagger_utils.parse_document(file);
-
-      swagger_utils.append_paths(root, doc, folder);
-      swagger_utils.append_definitions(root, doc, folder);
-    });
-
-    if( fs.existsSync(BACKEND_BASE) ){
-      const stats_folder2 = fs.statSync(BACKEND_BASE);
-      if( !stats_folder2.isDirectory() ){
-        const folders2 = fs.readdirSync(BACKEND_BASE);
-        folders2.forEach(folder => {
-          try {
-            const stats_dir = fs.statSync(BACKEND_BASE + folder);
-            if (!stats_dir.isDirectory())
-              return;
-            const stats_file = fs.statSync(BACKEND_BASE + folder + '/src/' + SWAGGER_TARGET_FNAME);
-            if (!stats_file.isFile())
-              return;
-          } catch (error) {
-            return;
-          }
-
-          const file = fs.readFileSync(BACKEND_BASE + folder + '/src/' + SWAGGER_TARGET_FNAME, 'utf-8');
-          const doc = swagger_utils.parse_document(file);
-
-          swagger_utils.append_paths(root, doc, folder);
-          swagger_utils.append_definitions(root, doc, folder);
-        });
+      if( fs.existsSync(BACKEND_BASE) ){
+        const stats_folder2 = fs.statSync(BACKEND_BASE);
+        if( !stats_folder2.isDirectory() ){
+          const folders2 = fs.readdirSync(BACKEND_BASE);
+          folders2.forEach(folder => {
+            append_swagger(root, folder, BACKEND_BASE, 'src/');
+          });
+        }
       }
     }
 
