@@ -154,6 +154,14 @@ class LineUtils{
         return this.createSuggestion(text, suggestions);
     }
 
+    createImageResponse(url){
+        return {
+          type: "image",
+          originalContentUrl: url,
+          previewImageUrl: url
+        };
+    }
+
     convertSimpleResponse(simpleResponse){
         var message = simpleResponse.displayText;
         if( !message ) 
