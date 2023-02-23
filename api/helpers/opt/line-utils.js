@@ -154,10 +154,10 @@ class LineUtils{
         return this.createSuggestion(text, suggestions);
     }
 
-    createImageResponse(url){
+    createImageResponse(url, original){
         return {
           type: "image",
-          originalContentUrl: url,
+          originalContentUrl: original ? original : url,
           previewImageUrl: url
         };
     }
