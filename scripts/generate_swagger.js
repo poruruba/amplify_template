@@ -69,6 +69,6 @@ if( num == 0 ){
   return;
 }
 
-var swagger = swagger_utils.yaml_stringify(root);
+var swagger = swagger_utils.stringify_document(root);
 fs.writeFileSync(SWAGGER_BASE_FILE, swagger, 'utf-8');
 console.log(SWAGGER_BASE_FILE + ' merged');
