@@ -86,7 +86,7 @@ if( fs.existsSync(fname) ){
 
           let options = parse_swagger_method(docMethod);
           if( !options.operationId )
-            throw "operationId is not defined";
+                options.operationId = folder_name;
 
           const path = docPath.key.value;
           console.log(path, options.method, options.handler, JSON.stringify(options));
