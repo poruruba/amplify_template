@@ -35,30 +35,30 @@ console.log('THIS_BASE_PATH: ' + process.env.THIS_BASE_PATH);
 process.env.HELPER_BASE = process.env.THIS_BASE_PATH + "/api/helpers/opt/";
 
 // swagger.yamlの検索
-const routing = require(process.env.THIS_BASE_PATH + '/api/controllers/routing');
+const routing = require(process.env.THIS_BASE_PATH + '/api/controllers/routing/routing');
 app.use(routing.basePath, routing.router);
 console.log('BasePath: ' + routing.basePath);
 
 // mqtt.jsonの検索
 if( process.env.MQTT_BROKER_URL )
-  require(process.env.THIS_BASE_PATH + '/api/controllers/routing_mqtt');
+  require(process.env.THIS_BASE_PATH + '/api/controllers/routing/routing_mqtt');
 
 // udp.jsonの検索
-require(process.env.THIS_BASE_PATH + '/api/controllers/routing_udp');
+require(process.env.THIS_BASE_PATH + '/api/controllers/routing/routing_udp');
 
 // cron.jsonの検索
-require(process.env.THIS_BASE_PATH + '/api/controllers/routing_cron');
+require(process.env.THIS_BASE_PATH + '/api/controllers/routing/routing_cron');
 
 // sqs.jsonの検索
 if( process.env.ROUTING_SQS_ENDPOINT )
-  require(process.env.THIS_BASE_PATH + '/api/controllers/routing_sqs');
+  require(process.env.THIS_BASE_PATH + '/api/controllers/routing/routing_sqs');
 
 // kinesis.jsonの検索
 if( process.env.ROUTING_KINESIS_ENDPOINT )
-  require(process.env.THIS_BASE_PATH + '/api/controllers/routing_kinesis');
+  require(process.env.THIS_BASE_PATH + '/api/controllers/routing/routing_kinesis');
 
 // ws.jsonの検索
-const routing_ws = require(process.env.THIS_BASE_PATH + '/api/controllers/routing_ws');
+const routing_ws = require(process.env.THIS_BASE_PATH + '/api/controllers/routing/routing_ws');
 app.use('/', routing_ws.router);
 routing_ws.setWss(expressWs.getWss());
 
