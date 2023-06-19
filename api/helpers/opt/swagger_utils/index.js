@@ -98,10 +98,15 @@ function delete_definitions(root){
   return delete_target.length;
 }
 
+function yaml_stringify(root){
+  return yaml.stringify(root);
+}
+
 module.exports = {
   parse_document,
   append_paths,
   append_definitions,
   delete_paths,
   delete_definitions,
+  yaml_stringify
 };
