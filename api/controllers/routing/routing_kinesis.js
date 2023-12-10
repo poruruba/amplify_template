@@ -54,9 +54,12 @@ async function parse_kinesis_json(defs, folder, folder_name) {
 
     waitForCreateAndActive(item.StreamName)
     .then( result =>{
-      consumLoop(item.StreamName, intervalSec, proc);
+      consumLoop(item.StreamName, item.ShardId, intervalSec, proc);
 
-      console.log("kinesis(" + item.StreamName + ") " + handler + ' ' + folder_name);
+      if( item.shardId )
+        console.log("kinesis(" + item.StreamName + ":" + item.shardId + ") " + handler + ' ' + folder_name);
+      else
+        console.log("kinesis(" + item.StreamName + ") " + handler + ' ' + folder_name);
     });
   });
 }
@@ -87,13 +90,16 @@ async function getRecordsAll(params){
   return list;
 }
 
-async function consumLoop(streamName, intervalSec, func){
-  const result = await kinesis.describeStream( { StreamName: streamName } ).promise();
-  const shardId = result.StreamDescription.Shards[0].ShardId;
+async function consumLoop(streamName, shardId, intervalSec, func){
+  let targetShardId = shardId;
+  if( !targetShardId ){
+    const result = await kinesis.describeStream( { StreamName: streamName } ).promise();
+    targetShardId = result.StreamDescription.Shards[0].ShardId;
+  }
+
   let startSequenceNumber;
-        
   const getParams = {
-    ShardId: shardId,
+    ShardId: targetShardId,
     ShardIteratorType: "TRIM_HORIZON",
     StreamName: streamName,
   };
@@ -103,7 +109,7 @@ async function consumLoop(streamName, intervalSec, func){
 
   while(true){
     let params = {
-      ShardId: shardId,
+      ShardId: targetShardId,
       StreamName: streamName,
     };
     if( startSequenceNumber ){
@@ -128,7 +134,7 @@ async function consumLoop(streamName, intervalSec, func){
         },
         eventSource: "aws:kinesis",
         eventVersion: "1.0",
-        eventId: shardId + ":" + record.SequenceNumber,
+        eventId: targetShardId + ":" + record.SequenceNumber,
         eventName: "aws:kinesis:record",
         awsRegion: KINESIS_REGION,
       }
