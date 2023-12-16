@@ -51,15 +51,11 @@ async function parse_kinesis_json(defs, folder, folder_name) {
     const handler = item.handler || DEFAULT_HANDLER;
     const proc = require(folder)[handler];
     const intervalSec = item.IntervalSec || DEFAULT_INTERVAL;
+    const type = item.ShardIteratorType || "TRIM_HORIZON";
 
     waitForCreateAndActive(item.StreamName)
     .then( result =>{
-      consumLoop(item.StreamName, item.ShardId, intervalSec, proc);
-
-      if( item.shardId )
-        console.log("kinesis(" + item.StreamName + ":" + item.shardId + ") " + handler + ' ' + folder_name);
-      else
-        console.log("kinesis(" + item.StreamName + ") " + handler + ' ' + folder_name);
+      consumLoop(item.StreamName, item.ShardId, type, intervalSec, proc, handler, folder_name);
     });
   });
 }
@@ -68,62 +64,30 @@ async function wait_async(msec){
   return new Promise(resolve => setTimeout(resolve, msec));
 }
 
-async function getRecordsAll(params){
-  const result = await kinesis.getShardIterator(params).promise();
-  const shardIterator = result.ShardIterator;
-  
-  let list = [];
-  while (true) {
-    let getRecParams = {
-        ShardIterator: shardIterator
-    };
-    let result = await kinesis.getRecords(getRecParams).promise();
-
-    list.push(...result.Records);
-    if( result.MillisBehindLatest == 0 )
-      break;
-    if( !result.NextShardIterator )
-      break;
-    getRecParams.shardIterator = result.NextShardIterator;
-  }
-
-  return list;
-}
-
-async function consumLoop(streamName, shardId, intervalSec, func){
+async function consumLoop(streamName, shardId, type, intervalSec, func, handler, folder_name){
   let targetShardId = shardId;
   if( !targetShardId ){
     const result = await kinesis.describeStream( { StreamName: streamName } ).promise();
     targetShardId = result.StreamDescription.Shards[0].ShardId;
   }
-
-  let startSequenceNumber;
-  const getParams = {
+  
+  const getIterParams = {
     ShardId: targetShardId,
-    ShardIteratorType: "TRIM_HORIZON",
+    ShardIteratorType: type,
     StreamName: streamName,
   };
-  const list = await getRecordsAll(getParams);
-  if( list.length > 0 )
-    startSequenceNumber = list[list.length - 1].SequenceNumber;
+  const result = await kinesis.getShardIterator(getIterParams).promise();
+  let shardIterator = result.ShardIterator;
 
   while(true){
-    let params = {
-      ShardId: targetShardId,
-      StreamName: streamName,
+    const getRecParams = {
+      ShardIterator: shardIterator
     };
-    if( startSequenceNumber ){
-      params.ShardIteratorType = "AFTER_SEQUENCE_NUMBER";
-      params.StartingSequenceNumber = startSequenceNumber;
-    }else{
-      params.ShardIteratorType = "TRIM_HORIZON";
-    }
-    
-    const records = await getRecordsAll(params);
+    const result2 = await kinesis.getRecords(getRecParams).promise();
     let event = {
       Records: []
     };
-    for( let record of records ){
+    for( let record of result2.Records ){
       let item = {
         kinesis: {
           kinesisSchemaVersion: "1.0",
@@ -141,12 +105,36 @@ async function consumLoop(streamName, shardId, intervalSec, func){
       event.Records.push(item);
     }
 
-    if( records.length > 0 ){
-      startSequenceNumber = records[records.length - 1].SequenceNumber;
-      func( event, {});
+    if( result2.Records.length > 0 ){
+      try{
+        const context = {
+          succeed: (msg) => {
+              console.log('succeed called');
+          },
+          fail: (error) => {
+              console.log('failed called');
+          },
+        };
+        const task = func( event, context, (error, response) =>{
+          if( error )
+            console.log('callback failed called');
+          else
+            console.log('callback succeed called');
+        });
+        if( task instanceof Promise || (task && typeof task.then === 'function') ){
+          await task;
+          console.log('promise is called');
+        }
+      }catch(error){
+        console.log("consumLoop error catch")
+      }
+
+      console.log("kinesis(" + streamName + ":" + targetShardId + ") " + handler + ' ' + folder_name);
     }else{
       await wait_async(intervalSec);
     }
+
+    shardIterator = result2.NextShardIterator;
   }
 }
 
