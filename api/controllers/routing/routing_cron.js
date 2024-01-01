@@ -37,27 +37,26 @@ function parse_cron() {
 
 function parse_cron_json(defs, folder, folder_name) {
   defs.forEach(item => {
-    if (!item.enable && !item.ontime )
-      return;
-      
     const handler = item.handler || DEFAULT_HANDLER;
     const proc = require(folder)[handler];
-    
-    if( !item.enable && item.ontime ){
-    	try{
-	    proc(item.param);
-	}catch(error){
-	    console.error(error);
-	}
-	return;
+
+    if( !item.enable ){
+      if( item.ontime ){
+        try{
+          proc(item.param);
+        }catch(error){
+          console.error(error);
+        }
+      }
+      return;
     }
 
     cron.schedule(item.schedule, () => {
-    	try{
-    		proc(item.param);
-    	}catch(error){
-    		console.error(error);
-    	}
+      try{
+        proc(item.param);
+      }catch(error){
+        console.error(error);
+      }
     });
     console.log(item.schedule + " cron " + handler + ' ' + folder_name);
   });
