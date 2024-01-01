@@ -40,7 +40,7 @@ function parse_cron_json(defs, folder, folder_name) {
     const handler = item.handler || DEFAULT_HANDLER;
     const proc = require(folder)[handler];
 
-    if( item.ontime ){
+    if( item.onetime ){
       try{
         proc(item.param);
       }catch(error){
