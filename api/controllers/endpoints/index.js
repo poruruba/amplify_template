@@ -70,7 +70,7 @@ exports.handler = async (event, context, callback) => {
       }
     }
 
-    return new Response(root);
+    return new TextResponse("application/x-yaml", root);
   }else
   if( event.path == '/endpoints' ){
     let endpoints = {
