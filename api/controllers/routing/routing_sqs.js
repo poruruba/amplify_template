@@ -131,6 +131,7 @@ async function continuousReceive(params, func){
             }
           }catch(error){
             console.log(error);
+            return reject(err);
           }
 				});
 			});
