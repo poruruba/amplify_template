@@ -49,7 +49,11 @@ const methods_bootstrap = {
             siiimpleToast.success(message, { position: 'top|right' });
     },
     clip_paste: async function(){
-    	return navigator.clipboard.readText();
+        try{
+        	return navigator.clipboard.readText();
+        }catch(error){
+            return prompt("入力してください。");
+        }
     },
     clip_copy: async function(text){
     	return navigator.clipboard.writeText(text);
