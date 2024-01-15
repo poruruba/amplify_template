@@ -1,6 +1,6 @@
 'use strict';
 
-const MAX_DATA_SIZE = '1mb';
+const MAX_DATA_SIZE = process.env.MAX_DATA_SIZE || '1mb';
 
 const express = require('express');
 const path = require('path');
