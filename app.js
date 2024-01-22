@@ -27,7 +27,7 @@ app.use(session({
     secret: SESSION_SECRET_KEY,
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: true }
+//    cookie: { secure: true }
 }));
 
 process.env.THIS_BASE_PATH = __dirname;
