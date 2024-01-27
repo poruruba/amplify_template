@@ -19,6 +19,7 @@ const MQTT_TARGET_FNAME = "mqtt.json";
 const SQS_TARGET_FNAME = "sqs.json";
 const UDP_TARGET_FNAME = "udp.json";
 const SWAGGER_TARGET_FNAME = "swagger.yaml";
+const PUBLIC_FOLDER = process.env.THIS_BASE_PATH + "/public/";
 
 function append_swagger(root, folder, baseFolder, extraFolder){
     try {
@@ -150,5 +151,42 @@ exports.handler = async (event, context, callback) => {
     });
 
     return new Response(endpoints);
+  }else
+  if( event.path == '/sites'){
+    let list = [];
+    const folders = fs.readdirSync(PUBLIC_FOLDER);
+    folders.forEach(folder => {
+      try{
+        const stats_dir = fs.statSync(PUBLIC_FOLDER + folder);
+        if (!stats_dir.isDirectory())
+          return;
+        const stats_file = fs.statSync(PUBLIC_FOLDER + folder + '/' + "index.html");
+        if (!stats_file.isFile())
+          return;
+
+        const html = fs.readFileSync(PUBLIC_FOLDER + folder + '/' + "index.html").toString();
+        const head_start = html.toLowerCase().indexOf('<head>');
+        const head_end = html.toLowerCase().indexOf('</head>');
+        const title_start = html.toLowerCase().indexOf('<title>');
+        const title_end = html.toLowerCase().indexOf('</title>');
+        if( head_start < 0 || head_end < 0 || head_start > head_end || title_start > title_end || head_start > title_start || head_end < title_end ){
+          list.push({
+            folder: folder
+          });
+        }else{
+          const title = html.substring(title_start + 7, title_end);
+          list.push({
+            folder: folder,
+            title: title
+          });
+        }
+      }catch(error){
+        console.log(error);
+      }
+    });
+
+    return new Response({ list: list } );
+  }else{
+    throw new Error('unknown endpoints');
   }
 }
