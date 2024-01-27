@@ -10,6 +10,7 @@ var vue_options = {
     store: vue_store,
     router: vue_router,
     data: {
+        site_list: [],
     },
     computed: {
     },
@@ -17,8 +18,11 @@ var vue_options = {
     },
     created: function(){
     },
-    mounted: function(){
+    mounted: async function(){
         proc_load();
+
+        const result = await do_get('/sites');
+        this.site_list = result.list;
     }
 };
 vue_add_data(vue_options, { progress_title: '' }); // for progress-dialog
