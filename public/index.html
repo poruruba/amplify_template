@@ -47,11 +47,18 @@
     <div id="top" class="container">
         <h1>Template</h1>
 
+        <h3>Endpoints</h3>
         <ul>
           <li><a href="swagger">swagger</a></li>
           <li><a href="endpoints">endpoints</a></li>
         </ul>
-              
+        
+        <h3>Sites</h3>
+        <ul>
+          <li v-for="(item, index) of site_list"><a v-bind:href="item.folder + '/'">{{item.title || item.folder}}</a></li>
+        </ul>
+
+
         <router-view></router-view>
       
         <!-- for progress-dialog -->
