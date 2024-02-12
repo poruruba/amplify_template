@@ -137,7 +137,7 @@ function parse_ws_json(defs, folder, folder_name) {
 
   ws_list[stage] = new Map();
   
-  router.ws('/' + stage, (ws, req) =>{
+  router.ws('/' + stage, async (ws, req) =>{
     const connectionId = uuid.v4();
     ws_list[stage].set(connectionId, ws);
 
@@ -157,10 +157,14 @@ function parse_ws_json(defs, folder, folder_name) {
         isBase64Encoded: false,
         queryStringParameters: req.query,
       };
-      connect_handler(event, context);
+      try{
+        await connect_handler(event, context);
+      }catch(error){
+        console.error(error);
+      }
     }
 
-    ws.on('close', (e) =>{
+    ws.on('close', async (e) =>{
       ws_list[stage].delete(connectionId);
 
       if( disconnect_handler ){
@@ -178,11 +182,18 @@ function parse_ws_json(defs, folder, folder_name) {
           },
           isBase64Encoded: false
         };
-        disconnect_handler(event, context);
+        try{
+          await disconnect_handler(event, context);
+        }catch(error){
+          console.error(error);
+        }
       }
     });
 
-    ws.on('message', (msg) =>{
+    ws.on('message', async (msg) =>{
+      let isBase64Encoded = false;
+      if( Buffer.isBuffer(msg) )
+        isBase64Encoded = true;
       let event = {
         headers: req.headers,
         requestContext: {
@@ -194,8 +205,8 @@ function parse_ws_json(defs, folder, folder_name) {
           },
           connectionId: connectionId
         },
-        body: msg,
-        isBase64Encoded: false
+        isBase64Encoded: isBase64Encoded,
+        body: isBase64Encoded ? msg.toString('base64') : msg
       };
       try{
         const payload = JSON.parse(msg);
@@ -207,13 +218,17 @@ function parse_ws_json(defs, folder, folder_name) {
         
         try{
           event.requestContext.routeKey = item.action;
-          require(folder)[item.handler || DEFAULT_HANDLER](event, context);
+          await require(folder)[item.handler || DEFAULT_HANDLER](event, context);
         }catch(err){
           console.error(err);
         }
       }catch(err){
         event.requestContext.routeKey = "$default";
-        default_handler(event, context);
+        try{
+          await default_handler(event, context);
+        }catch(error){
+          console.error(error);
+        }
       }
     });
   });
