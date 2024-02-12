@@ -15,9 +15,11 @@ const SWAGGER_DEFAULT_BASE = THIS_BASE_PATH + '/api/swagger/';
 const CONTROLLERS_BASE = THIS_BASE_PATH + '/api/controllers/';
 const BACKEND_BASE = THIS_BASE_PATH + '/amplify/backend/function/';
 const CRON_TARGET_FNAME = "cron.json";
-const MQTT_TARGET_FNAME = "mqtt.json";
 const SQS_TARGET_FNAME = "sqs.json";
 const UDP_TARGET_FNAME = "udp.json";
+const MQTT_TARGET_FNAME = "mqtt.json";
+const WS_TARGET_FNAME = "ws.json";
+const WSC_TARGET_FNAME = "wsc.json";
 const SWAGGER_TARGET_FNAME = "swagger.yaml";
 const PUBLIC_FOLDER = process.env.THIS_BASE_PATH + "/public/";
 
@@ -79,6 +81,8 @@ exports.handler = async (event, context, callback) => {
       mqtt: [],
       sqs: [],
       udp: [],
+      ws: [],
+      wsc: [],
     };
 
     const folders = fs.readdirSync(CONTROLLERS_BASE);
@@ -145,6 +149,56 @@ exports.handler = async (event, context, callback) => {
           }
         }
 
+        root = endpoints.mqtt;
+        fname = CONTROLLERS_BASE + folder + "/" + MQTT_TARGET_FNAME;
+        if (fs.existsSync(fname)){
+          const stats_file = fs.statSync(fname);
+          if (stats_file.isFile()){
+            const defs = JSON.parse(fs.readFileSync(fname).toString());
+            for(let def of defs){
+              const item = {
+                operationId: folder,
+                topic: def.topic,
+                handler: def.handler ? def.handler : DEFAULT_HANDLER,
+                enable: def.enable ? true : false
+              };
+              root.push(item);
+            }
+          }
+        }
+
+        root = endpoints.ws;
+        fname = CONTROLLERS_BASE + folder + "/" + WS_TARGET_FNAME;
+        if (fs.existsSync(fname)){
+          const stats_file = fs.statSync(fname);
+          if (stats_file.isFile()){
+            const def = JSON.parse(fs.readFileSync(fname).toString());
+            const item = {
+              operationId: folder,
+              stage: def.stage,
+              handler: def.handler ? def.handler : DEFAULT_HANDLER,
+              enable: def.enable ? true : false
+            };
+            root.push(item);
+          }
+        }
+
+        root = endpoints.wsc;
+        fname = CONTROLLERS_BASE + folder + "/" + WSC_TARGET_FNAME;
+        if (fs.existsSync(fname)){
+          const stats_file = fs.statSync(fname);
+          if (stats_file.isFile()){
+            const def = JSON.parse(fs.readFileSync(fname).toString());
+            const item = {
+              operationId: folder,
+              url: def.url,
+              handler: def.handler ? def.handler : DEFAULT_HANDLER,
+              enable: def.enable ? true : false
+            };
+            root.push(item);
+          }
+        }
+
       } catch (error) {
         console.log(error);
       }
@@ -181,7 +235,7 @@ exports.handler = async (event, context, callback) => {
           });
         }
       }catch(error){
-        console.log(error);
+//        console.log(error);
       }
     });
 
