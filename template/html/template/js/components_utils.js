@@ -3,7 +3,7 @@ const components_utils = {
     props: ['id', 'callback', 'accept', 'multiple'],
     template: `
     <div>
-      <input type="file" class="form-control" v-bind:id="id" v-bind:accept="accept" v-on:change="file_open" v-on:click="file_click" v-bind:multiple="multiple">
+      <input type="file" v-bind:id="id" v-bind:accept="accept" v-on:change="file_open" v-on:click="file_click" v-bind:multiple="multiple">
     </div>
     `,
     methods: {
