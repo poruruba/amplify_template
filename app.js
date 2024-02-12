@@ -62,6 +62,9 @@ const routing_ws = require(process.env.THIS_BASE_PATH + '/api/controllers/routin
 app.use('/', routing_ws.router);
 routing_ws.setWss(expressWs.getWss());
 
+// wsc.jsonの検索
+require(process.env.THIS_BASE_PATH + '/api/controllers/routing/routing_wsc');
+
 app.all('*', function(req, res) {
 //  console.log(req);
   console.log('Unknown Endpoint');
