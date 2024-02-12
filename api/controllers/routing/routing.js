@@ -336,7 +336,7 @@ function preprocess(options, postprocess){
       }
       upload(req, res, function(err){
         if(err)
-          throw err;
+          console.error(err);
         next();
       });
     }else{
