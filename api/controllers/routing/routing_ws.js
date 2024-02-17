@@ -22,8 +22,8 @@ class WebSocketLib{
   getConnectionList(callback){
     try{
       let list = [];
-      for( let item in ws_list[this.stage] )
-        list.push(item);
+      for( let [key] of ws_list[this.stage] )
+        list.push(key);
 
       if( callback ){
         callback(null, list);
@@ -155,13 +155,14 @@ function parse_ws_json(defs, folder, folder_name) {
           connectionId: connectionId
         },
         isBase64Encoded: false,
+        session: req.session,
         queryStringParameters: req.query,
       };
       try{
         await connect_handler(event, context);
       }catch(error){
         console.error(error);
-      }
+      }        
     }
 
     ws.on('close', async (e) =>{
@@ -180,20 +181,18 @@ function parse_ws_json(defs, folder, folder_name) {
             },
             connectionId: connectionId
           },
-          isBase64Encoded: false
+          isBase64Encoded: false,
+          session: req.session,
         };
         try{
           await disconnect_handler(event, context);
         }catch(error){
           console.error(error);
-        }
+        }          
       }
     });
 
     ws.on('message', async (msg) =>{
-      let isBase64Encoded = false;
-      if( Buffer.isBuffer(msg) )
-        isBase64Encoded = true;
       let event = {
         headers: req.headers,
         requestContext: {
@@ -205,16 +204,19 @@ function parse_ws_json(defs, folder, folder_name) {
           },
           connectionId: connectionId
         },
-        isBase64Encoded: isBase64Encoded,
-        body: isBase64Encoded ? msg.toString('base64') : msg
+        isBase64Encoded: false,
+        body: msg,
+        session: req.session,
       };
       try{
         const payload = JSON.parse(msg);
         if( !payload.action )
           throw "now action";
+        if( !defs.routekeys )
+          throw "no routekey";
         const item = defs.routekeys.find( routekey => routekey.action == payload.action );
         if( !item )
-          throw "now routekey";
+          throw "no routekey";
         
         try{
           event.requestContext.routeKey = item.action;
