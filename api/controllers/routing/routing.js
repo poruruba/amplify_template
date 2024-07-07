@@ -370,6 +370,7 @@ function routing(req, res) {
               Host: req.hostname,
               requestContext: ( req.requestContext ) ? req.requestContext : {},
               files: req.files,
+              session: req.session,
           };
           event.requestContext.requestTimeEpoch = new Date().getTime();
       }else
