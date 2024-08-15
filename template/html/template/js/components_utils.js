@@ -53,7 +53,7 @@ const components_utils = {
         };
         
         return toDatetimeString(this.value);
-}
+      }
     },
     methods: {
       do_input: function(event){
