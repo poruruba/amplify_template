@@ -60,34 +60,32 @@ function loader_loaded(){
     element.classList.add('loader-loaded');
 }
 
-// input: url, method, qs, body, params, response_type, content_type, token, api_key
+// input: url, method, headers, qs, body, params, response_type, content_type, token, api_key
 async function do_http(input){
   const method = input.method ? input.method : "POST";
   const content_type = input.content_type ? input.content_type : "application/json";
   const response_type = input.response_type ? input.response_type : "json";
 
   const headers = new Headers();
+  if( input.headers ){
+    for( const key of Object.keys(input.headers))
+      headers.append(key, input.headers[key]);
+  }
+
   if( content_type != "multipart/form-data" )
     headers.append("Content-Type", content_type);
   if( input.token )
     headers.append("Authorization", "Bearer " + input.token);
   if( input.api_key )
     headers.append("x-api-key", input.api_key);
-	if( input.headers ){
-		for( const key in input.headers )
-			headers.append(key, input.headers[key]);
-	}
 
   let body;
-  if( content_type == "application/x-www-form-urlencoded"){
+  if( content_type == "application/json" ){
+    body = JSON.stringify(input.body);
+  }else if( content_type == "application/x-www-form-urlencoded"){
     body = new URLSearchParams(input.params);
   }else if( content_type == "multipart/form-data"){
     body = Object.entries(input.params).reduce((l, [k, v]) => { l.append(k, v); return l; }, new FormData());
-  }else if( content_type == "application/json" ){
-		if( input.body )
-      body = JSON.stringify(input.body);
-	}else{
-		body = input.body
 	}
 
   const params = new URLSearchParams(input.qs);
@@ -97,7 +95,8 @@ async function do_http(input){
   return fetch(input.url + postfix, {
     method: method,
     body: body,
-    headers: headers
+    headers: headers,
+    cache: "no-store"
   })
   .then((response) => {
     if (!response.ok)
@@ -111,8 +110,7 @@ async function do_http(input){
       const disposition = response.headers.get('Content-Disposition');
       let filename = "";
       if( disposition ){
-        const parts = disposition.split(';').find(item => item.trim().startsWith("filename") );
-        filename = parts.trim().split(/=(.+)/)[1];
+        filename = disposition.split(/;(.+)/)[1].split(/=(.+)/)[1];
         if (filename.toLowerCase().startsWith("utf-8''"))
             filename = decodeURIComponent(filename.replace(/utf-8''/i, ''));
         else
