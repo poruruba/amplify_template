@@ -104,7 +104,9 @@ async function do_http(input){
     if (!response.ok)
       throw new Error('status is not 200');
 
-    if( response_type == "json" )
+    if( response_type == "raw" )
+      return response;
+    else if( response_type == "json" )
       return response.json();
     else if( response_type == 'blob')
       return response.blob();
