@@ -16,7 +16,7 @@ const expressWs = require('express-ws')(app);
 
 //app.use(logger('tiny', { stream: fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' }) }));
 app.use(logger('dev')); // for development
-app.use(express.json({limit: MAX_DATA_SIZE}));
+//app.use(express.json({limit: MAX_DATA_SIZE}));
 app.use(express.urlencoded({ limit: MAX_DATA_SIZE, extended: false }));
 app.use(cookieParser());
 app.use(cors());
