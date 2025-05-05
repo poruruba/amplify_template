@@ -46,7 +46,6 @@ function parse_cron_json(defs, folder, folder_name) {
       }catch(error){
         console.error(error);
       }
-      return;
     }
     if( !item.enable )
       return;
