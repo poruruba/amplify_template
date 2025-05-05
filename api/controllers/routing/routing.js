@@ -1,6 +1,7 @@
 'use strict';
 
 const THIS_BASE_PATH = process.env.THIS_BASE_PATH;
+const MAX_DATA_SIZE = process.env.MAX_DATA_SIZE || '1mb';
 
 const CONTROLLERS_BASE = THIS_BASE_PATH + '/api/controllers/';
 const BACKEND_BASE = THIS_BASE_PATH + '/amplify/backend/function/';
@@ -14,6 +15,8 @@ const fs = require('fs');
 const yaml = require('yaml');
 const multer = require('multer');
 const jwt_decode = require('jwt-decode');
+
+const jsonParser = express.json({limit: MAX_DATA_SIZE});
 
 let swagger_basePath = '/';
 
@@ -50,18 +53,35 @@ function parse_swagger_yaml(swagger, folder, folder_name)
         nextfunc = routing;
       }
 
-      switch (options.method){
-        case 'get': {
-          router.get(path, preprocess(options, postprocess), nextfunc);
-          break;
+      if( options.parser_type == 'raw' ){
+        switch (options.method){
+          case 'get': {
+            router.get(path, preprocess(options, postprocess), nextfunc);
+            break;
+          }
+          case 'post': {
+            router.post(path, preprocess(options, postprocess), nextfunc);
+            break;
+          }
+          case 'head': {
+            router.head(path, preprocess(options, postprocess), nextfunc);
+            break;
+          }
         }
-        case 'post': {
-          router.post(path, preprocess(options, postprocess), nextfunc);
-          break;
-        }
-        case 'head': {
-          router.head(path, preprocess(options, postprocess), nextfunc);
-          break;
+      }else{
+        switch (options.method){
+          case 'get': {
+            router.get(path, jsonParser, preprocess(options, postprocess), nextfunc);
+            break;
+          }
+          case 'post': {
+            router.post(path, jsonParser, preprocess(options, postprocess), nextfunc);
+            break;
+          }
+          case 'head': {
+            router.head(path, jsonParser, preprocess(options, postprocess), nextfunc);
+            break;
+          }
         }
       }
     });
@@ -106,18 +126,35 @@ if( fs.existsSync(fname) ){
             nextfunc = routing;
           }
   
-          switch(options.method){
-            case 'get': {
-              router.get(path, preprocess(options, postprocess), nextfunc);
-              break;
+          if( options.parser_type == 'raw' ){
+            switch(options.method){
+              case 'get': {
+                router.get(path, jsonParser, preprocess(options, postprocess), nextfunc);
+                break;
+              }
+              case 'post': {
+                router.post(path, jsonParser, preprocess(options, postprocess), nextfunc);
+                break;
+              }
+              case 'head': {
+                router.head(path, jsonParser, preprocess(options, postprocess), nextfunc);
+                break;
+              }
             }
-            case 'post': {
-              router.post(path, preprocess(options, postprocess), nextfunc);
-              break;
-            }
-            case 'head': {
-              router.head(path, preprocess(options, postprocess), nextfunc);
-              break;
+          }else{
+            switch(options.method){
+              case 'get': {
+                router.get(path, preprocess(options, postprocess), nextfunc);
+                break;
+              }
+              case 'post': {
+                router.post(path, preprocess(options, postprocess), nextfunc);
+                break;
+              }
+              case 'head': {
+                router.head(path, preprocess(options, postprocess), nextfunc);
+                break;
+              }
             }
           }
         });
@@ -220,6 +257,12 @@ function parse_swagger_method(docMethod) {
   const docFuncType = docMethod.value.items.filter(item => item.key.value == 'x-functype');
   if (docFuncType.length == 1)
     options.func_type = docFuncType[0].value.value;
+
+  // オプションタグ: x-parsertype
+  // x-parsertype: (json|raw)
+  const docParserType = docMethod.value.items.filter(item => item.key.value == 'x-parsertype');
+  if (docParserType.length == 1)
+    options.parser_type = docParserType[0].value.value;  
 
   // オプションタグ: consumes
   const docConsumes = docMethod.value.items.filter(item => item.key.value == 'consumes');
