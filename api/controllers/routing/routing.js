@@ -15,7 +15,6 @@ const fs = require('fs');
 const yaml = require('yaml');
 const multer = require('multer');
 const jwt_decode = require('jwt-decode');
-const path = require('path');
 
 const jsonParser = express.json({limit: MAX_DATA_SIZE});
 
