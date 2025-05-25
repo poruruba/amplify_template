@@ -15,78 +15,13 @@ const fs = require('fs');
 const yaml = require('yaml');
 const multer = require('multer');
 const jwt_decode = require('jwt-decode');
+const path = require('path');
 
 const jsonParser = express.json({limit: MAX_DATA_SIZE});
 
 let swagger_basePath = '/';
 
 const fname = SWAGGER_DEFAULT_BASE + TARGET_FNAME;
-
-function parse_swagger_yaml(swagger, folder, folder_name)
-{
-  // paths配下のみ参照
-  const paths = swagger.get('paths');
-  paths.items.forEach(docPath =>{
-    docPath.value.items.forEach(docMethod =>{
-      if (docMethod.key.value != 'get' && docMethod.key.value != 'post' && docMethod.key.value != 'head')
-        return;
-
-      let options = parse_swagger_method(docMethod);
-      if (!options.operationId)
-        options.operationId = folder_name;
-
-      const path = docPath.key.value;
-      console.log(path, options.method, options.handler, JSON.stringify(options));
-
-      let postprocess;
-      let nextfunc;
-      if( options.func_type == "express"){
-        // x-functype: express の場合
-        nextfunc = require(folder)[options.handler];
-      }else
-      if( options.func_type == 'empty' ){
-        // x-functype: empty の場合
-        nextfunc = (req, res) => res.json({});
-      }else{
-        // x-functype: normal|alexa|lambda|minio の場合
-        postprocess = require(folder)[options.handler];
-        nextfunc = routing;
-      }
-
-      if( options.parser_type == 'raw' ){
-        switch (options.method){
-          case 'get': {
-            router.get(path, preprocess(options, postprocess), nextfunc);
-            break;
-          }
-          case 'post': {
-            router.post(path, preprocess(options, postprocess), nextfunc);
-            break;
-          }
-          case 'head': {
-            router.head(path, preprocess(options, postprocess), nextfunc);
-            break;
-          }
-        }
-      }else{
-        switch (options.method){
-          case 'get': {
-            router.get(path, jsonParser, preprocess(options, postprocess), nextfunc);
-            break;
-          }
-          case 'post': {
-            router.post(path, jsonParser, preprocess(options, postprocess), nextfunc);
-            break;
-          }
-          case 'head': {
-            router.head(path, jsonParser, preprocess(options, postprocess), nextfunc);
-            break;
-          }
-        }
-      }
-    });
-  });
-}
 
 if( fs.existsSync(fname) ){
   const stats_file = fs.statSync(fname);
@@ -109,54 +44,7 @@ if( fs.existsSync(fname) ){
             throw "operationId is not defined";
 
           const path = docPath.key.value;
-          console.log(path, options.method, options.handler, JSON.stringify(options));
-
-          let postprocess;
-          let nextfunc;
-          if( options.func_type == "express"){
-            // x-functype: express の場合
-            nextfunc = require(CONTROLLERS_BASE + options.operationId)[options.handler];
-          }else
-          if( options.func_type == 'empty' ){
-            // x-functype: empty の場合
-            nextfunc = (req, res) => res.json({});
-          }else{
-            // x-functype: normal|alexa|lambda|minio の場合
-            postprocess = require(CONTROLLERS_BASE + options.operationId)[options.handler];
-            nextfunc = routing;
-          }
-  
-          if( options.parser_type == 'raw' ){
-            switch(options.method){
-              case 'get': {
-                router.get(path, jsonParser, preprocess(options, postprocess), nextfunc);
-                break;
-              }
-              case 'post': {
-                router.post(path, jsonParser, preprocess(options, postprocess), nextfunc);
-                break;
-              }
-              case 'head': {
-                router.head(path, jsonParser, preprocess(options, postprocess), nextfunc);
-                break;
-              }
-            }
-          }else{
-            switch(options.method){
-              case 'get': {
-                router.get(path, preprocess(options, postprocess), nextfunc);
-                break;
-              }
-              case 'post': {
-                router.post(path, preprocess(options, postprocess), nextfunc);
-                break;
-              }
-              case 'head': {
-                router.head(path, preprocess(options, postprocess), nextfunc);
-                break;
-              }
-            }
-          }
+          process_swagger_method(path, CONTROLLERS_BASE + options.operationId, options);
         });
       });
     }catch(error){
@@ -217,7 +105,27 @@ if( fs.existsSync(BACKEND_BASE) ){
 	}
 }
 
-function parse_swagger_method(docMethod) {
+function parse_swagger_yaml(swagger, folder, folder_name)
+{
+  // paths配下のみ参照
+  const paths = swagger.get('paths');
+  paths.items.forEach(docPath =>{
+    docPath.value.items.forEach(docMethod =>{
+      if (docMethod.key.value != 'get' && docMethod.key.value != 'post' && docMethod.key.value != 'head')
+        return;
+
+      let options = parse_swagger_method(docMethod);
+      if (!options.operationId)
+        options.operationId = folder_name;
+
+      const path = docPath.key.value;
+      process_swagger_method(path, folder, options);
+    });
+  });
+}
+
+function parse_swagger_method(docMethod)
+{
   // デフォルト値
   const options = {
     operationId: null,
@@ -294,6 +202,65 @@ function parse_swagger_method(docMethod) {
   }
 
   return options;
+}
+
+async function process_swagger_method(path, folder, options)
+{
+  try{
+    let postprocess;
+    let nextfunc;
+    if( options.func_type == "express"){
+      // x-functype: express の場合
+      nextfunc = require(folder)[options.handler];
+    }else
+    if( options.func_type == 'empty' ){
+      // x-functype: empty の場合
+      nextfunc = (req, res) => res.json({});
+    }else{
+      // x-functype: normal|alexa|lambda|minio の場合
+      if( !fs.existsSync(folder + "/index.js")){
+        postprocess = (await import(toFileUri(folder + '/index.mjs')))[options.handler];
+      }else{
+        postprocess = require(folder)[options.handler];
+      }
+      nextfunc = routing;
+    }
+
+    if( options.parser_type == 'raw' ){
+      switch (options.method){
+        case 'get': {
+          router.get(path, preprocess(options, postprocess), nextfunc);
+          break;
+        }
+        case 'post': {
+          router.post(path, preprocess(options, postprocess), nextfunc);
+          break;
+        }
+        case 'head': {
+          router.head(path, preprocess(options, postprocess), nextfunc);
+          break;
+        }
+      }
+    }else{
+      switch (options.method){
+        case 'get': {
+          router.get(path, jsonParser, preprocess(options, postprocess), nextfunc);
+          break;
+        }
+        case 'post': {
+          router.post(path, jsonParser, preprocess(options, postprocess), nextfunc);
+          break;
+        }
+        case 'head': {
+          router.head(path, jsonParser, preprocess(options, postprocess), nextfunc);
+          break;
+        }
+      }
+    }
+    console.log(path, options.method, options.handler, JSON.stringify(options));
+  }catch(error){
+    console.error(error);
+  }
 }
 
 // x-functype: 前処理
@@ -541,6 +508,16 @@ function return_response(res, ret){
                 res.json({});
         }
     }
+}
+
+function toFileUri(windowsPath) {
+  // バックスラッシュをスラッシュに置換
+  const normalizedPath = windowsPath.replace(/\\/g, '/');
+  // ドライブレターの後のコロンを削除し、先頭にスラッシュを追加
+  const withSlashes = normalizedPath.startsWith('/') ? normalizedPath : `/${normalizedPath}`;
+  // URI エンコード（必要に応じて）
+  const encodedPath = encodeURI(withSlashes);
+  return `file://${encodedPath}`;
 }
 
 module.exports = {
