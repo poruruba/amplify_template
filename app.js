@@ -39,6 +39,10 @@ const routing = require(process.env.THIS_BASE_PATH + '/api/controllers/routing/r
 app.use(routing.basePath, routing.router);
 console.log('BasePath: ' + routing.basePath);
 
+// mcp.yamlの検索
+const routing_mcp = require(process.env.THIS_BASE_PATH + '/api/controllers/routing/routing_mcp');
+app.use(routing_mcp.basePath, routing_mcp.router);
+
 // mqtt.jsonの検索
 if( process.env.MQTT_BROKER_URL )
   require(process.env.THIS_BASE_PATH + '/api/controllers/routing/routing_mqtt');
