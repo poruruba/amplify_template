@@ -10,7 +10,7 @@ exports.handler = () => {
     });
 
     // Add tools
-    server.tool("testtool1", "add two numbers",
+    server.tool("testtool1", "2つの数値を加算します。",
         { a: z.number().describe("数値1"), b: z.number().describe("数値2") },
         async (args) => {
           return {
@@ -23,7 +23,7 @@ exports.handler = () => {
           }
         }
     );
-    server.tool("testtool2", "subtract two numbers",
+    server.tool("testtool2", "2つの数値を減算します。",
       { a: z.number().describe("数値1"), b: z.number().describe("数値2") },
       async (args) => {
         return {
@@ -39,13 +39,12 @@ exports.handler = () => {
 
     // Add a dynamic greeting resource
     server.resource(
-        "gpio",
-        new ResourceTemplate("gpio://PORT{name}", { list: async () => {
+        "greeting",
+        new ResourceTemplate("greeting://{name}", { list: async () => {
             return {
                 resources:
                     [
-                      { name: "37", uri: "gpio://PORT37"},
-                      { name: "39", uri: "gpio://PORT39"},
+                      { name: "hogehoge", uri: "greeting://hogehoge"},
                     ]
             };
           }}
@@ -54,7 +53,7 @@ exports.handler = () => {
           return {
               contents: [{
                   uri: uri.href,
-                  text: variables.name
+                  text: `Hello, ${variables.name}!`
               }]
           }
         }
