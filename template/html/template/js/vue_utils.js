@@ -131,6 +131,70 @@ async function do_http(input){
       return response.text();
   });
 }
+// async function do_http(input){
+//   const method = input.method ? input.method : "POST";
+//   const content_type = input.content_type ? input.content_type : "application/json";
+//   const response_type = input.response_type ? input.response_type : "json";
+
+//   let headers = {};
+//   if( input.headers ){
+//     for( const key of Object.keys(input.headers))
+//       headers[key] = input.headers[key];
+//   }
+//   if( content_type != "multipart/form-data" )
+//     headers["Content-Type"] = content_type;
+//   if( input.token )
+//     headers["Authorization"] = "Bearer " + input.token;
+//   if( input.api_key )
+//     headers["x-api-key"] = input.api_key;
+
+//   let options = {
+//     method: method,
+//     headers: headers,
+//   };
+//   switch(content_type){
+//     case 'application/json': cordova.plugin.http.setDataSerializer('json'); break;
+//     case 'application/x-www-form-urlencoded': cordova.plugin.http.setDataSerializer('urlencoded'); break;
+//     case 'multipart/form-data': cordova.plugin.http.setDataSerializer('multipart'); break;
+//     default: cordova.plugin.http.setDataSerializer('raw'); break;
+//   }
+
+//   if( content_type == 'application/x-www-form-urlencoded' ){
+//     options.data = input.params;
+//   }else if(content_type == 'multipart/form-data'){
+//     if( input.body ){
+//       let formData = new FormData();
+//       for( const key of Object.keys(input.body))
+//         formData.append(key, input.body[key]);
+//       options.data = formData;
+//     }
+//   }else{
+//     options.data = input.body;
+//   }
+
+//   const params = new URLSearchParams(input.qs);
+//   const params_str = params.toString();
+//   const postfix = (params_str == "") ? "" : ((input.url.indexOf('?') >= 0) ? ('&' + params_str) : ('?' + params_str));
+
+//   return new Promise((resolve, reject) =>{
+//     cordova.plugin.http.sendRequest(input.url + postfix, options, (response) =>{
+//       if( Math.floor(response.status / 100) * 100 != 200 ){
+//         reject('status is not 200');
+//         return;
+//       }
+//       try{
+//         if( response_type == 'json' )
+//           resolve(JSON.stringify(response.data));
+//         else
+//           resolve(response.data);
+//       }catch(error){
+//         reject(error);
+//       } 
+//     }, (response) =>{
+//       reject(response.error);
+//     });
+//   });
+// }
 
 function do_post(url, body) {
   const headers = new Headers({ "Content-Type": "application/json" });
