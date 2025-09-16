@@ -21,8 +21,27 @@ var vue_options = {
     mounted: async function(){
         proc_load();
 
-        const result = await do_get('/sites');
-        this.site_list = result.list;
+        try{
+            var first = false;
+            var apikey = localStorage.getItem('api_key');
+            if( !apikey ){
+                first = true;
+                apikey = prompt("api_key");
+            }
+            if( apikey ){
+                var input = {
+                    url: "/sites",
+                    method: "GET",
+                    api_key: apikey
+                };
+                var result = await do_http(input);
+                this.site_list = result.list;
+                if( first )
+                    localStorage.setItem("api_key", apikey);
+            }
+        }catch(error){
+            console.error(error);
+        }
     }
 };
 vue_add_data(vue_options, { progress_title: '' }); // for progress-dialog
