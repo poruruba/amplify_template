@@ -22,6 +22,7 @@ const WS_TARGET_FNAME = "ws.json";
 const WSC_TARGET_FNAME = "wsc.json";
 const SWAGGER_TARGET_FNAME = "swagger.yaml";
 const PUBLIC_FOLDER = process.env.THIS_BASE_PATH + "/public/";
+const API_KEY = process.env.API_KEY || "12345678";
 
 function append_swagger(root, folder, baseFolder, extraFolder){
     try {
@@ -207,6 +208,9 @@ exports.handler = async (event, context, callback) => {
     return new Response(endpoints);
   }else
   if( event.path == '/sites'){
+    if( event.requestContext.apikeyAuth?.apikey != API_KEY )
+      throw Error("invalid api_key");
+    
     let list = [];
     const folders = fs.readdirSync(PUBLIC_FOLDER);
     folders.forEach(folder => {
