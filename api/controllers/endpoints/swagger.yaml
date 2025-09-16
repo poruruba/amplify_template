@@ -17,6 +17,8 @@ paths:
 
   /sites:
     get:
+      security:
+        - apikeyAuth: []
       responses:
         200:
           description: Success
