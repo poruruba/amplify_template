@@ -85,7 +85,7 @@ async function do_http(input){
   }else if( content_type == "application/x-www-form-urlencoded"){
     body = new URLSearchParams(input.params);
   }else if( content_type == "multipart/form-data"){
-    body = Object.entries(input.params).reduce((l, [k, v]) => { if(k !== undefined) l.append(k, v); return l; }, new FormData());
+    body = Object.entries(input.params).reduce((l, [k, v]) => { if(v !== undefined) l.append(k, v); return l; }, new FormData());
   }else if( content_type == "application/octet-stream" ){
     body = input.body;
   }
