@@ -1,24 +1,5 @@
 'use strict';
 
-function gql_do_post(url, body, apikey) {
-  const headers = new Headers({ "Content-Type": "application/json" });
-  if( apikey )
-    headers.append("x-api-key", apikey);
-
-  var param = {
-    method: 'POST',
-    body: JSON.stringify(body),
-    headers: headers,
-  };
-
-  return fetch(url, param)
-  .then((response) => {
-    if (!response.ok)
-        throw 'status is not 200';
-    return response.json();
-  });
-}
-
 function gql_isString(obj) {
   return typeof (obj) == "string" || obj instanceof String;
 };
@@ -41,38 +22,29 @@ function gql_escape(str){
   return t.slice(5, -1);
 }
 
-async function gql_query(url, exp, variables, apikey){
+// input: url, headers, qs, exp, variables, token, api_key
+async function do_gql_query(input){
   var body;  
-  if( Array.isArray(variables) ){
+  if( input.exps instanceof Function ){
+    const args = Array.isArray(input.variables) ? input.variables : [];
     body = {
-      query: exp(...variables)
+      query: input.exps(...args)
     };
   }else{
     body = {
-      query: exp,
-      variables: variables
+      query: input.exps,
+      variables: input.variables
     };
   }
-  var json = await gql_do_post(url, body, apikey );
+  var gql_input = {
+    url: input.url,
+    qs: input.qs,
+    body: body,
+    token: input.token,
+    api_key: input.api_key
+  };
+  var json = await do_http(gql_input);
   if( json.errors )
-    throw json;
-  return json.data;
-}
-
-async function gql_mutation(url, exp, variables, apikey){
-  var body;  
-  if( Array.isArray(variables) ){
-    body = {
-      mutation: exp(...variables)
-    };
-  }else{
-    body = {
-      mutation: exp,
-      variables: variables
-    };
-  }
-  var json = await gql_do_post(url, body, apikey );
-  if( json.errors )
-    throw json;
+    throw json.errors;
   return json.data;
 }
