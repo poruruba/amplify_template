@@ -33,6 +33,9 @@ class AwsLambda{
 
   streamifyResponse( func ){
     return (event, context) =>{
+      context.res.setHeader('Transfer-Encoding', 'chunked' );
+      context.res.setHeader('Cache-Control', 'no-cache');
+      context.res.setHeader('Connection', 'keep-alive');
       return func(event, context.res, context);
     }
   }
@@ -385,24 +388,6 @@ function routing(req, res) {
   try{
       let event;
       const func = req.postprocess;
-      if( res.func_type == 'stream' ){
-        event = {
-            headers: req.headers,
-            body: JSON.stringify(req.body),
-            path: req.path,
-            httpMethod: req.method,
-            queryStringParameters: req.query,
-            stage: req.baseUrl ? req.baseUrl : '/',
-            Host: req.hostname,
-            requestContext: ( req.requestContext ) ? req.requestContext : {},
-            files: req.files,
-            session: req.session,
-        };
-        event.requestContext.requestTimeEpoch = new Date().getTime();
-        res.setHeader('Transfer-Encoding', 'chunked' );
-        res.setHeader('Cache-Control', 'no-cache');
-        res.setHeader('Connection', 'keep-alive');
-      }else
       if( res.func_type == 'express'){
         func(req, res)
         .catch(err =>{
@@ -411,7 +396,7 @@ function routing(req, res) {
         });
         return;
       }else
-      if( res.func_type == 'normal' ){
+      if( res.func_type == 'normal' || res.func_type == 'stream'){
           event = {
               headers: req.headers,
               body: JSON.stringify(req.body),
