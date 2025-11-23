@@ -18,6 +18,25 @@ const jwt_decode = require('jwt-decode');
 
 const jsonParser = express.json({limit: MAX_DATA_SIZE});
 
+class AwsLambda{
+  constructor(){
+    this.HttpResponseStream = {
+      from: (stream, meta) => {
+        if( meta?.statusCode !== undefined)
+          stream.status(meta.statusCode);
+        for( let key in meta?.headers )
+          stream.setHeader(key, meta.headers[key] );
+        return stream;
+      }
+    }
+  }
+
+  streamifyResponse( func ){
+    return func;
+  }
+}
+global.awslambda = new AwsLambda();
+
 let swagger_basePath = '/';
 
 const fname = SWAGGER_DEFAULT_BASE + TARGET_FNAME;
@@ -364,8 +383,49 @@ function routing(req, res) {
   try{
       let event;
       const func = req.postprocess;
+      if( res.func_type == 'stream' ){
+        event = {
+            headers: req.headers,
+            body: JSON.stringify(req.body),
+            path: req.path,
+            httpMethod: req.method,
+            queryStringParameters: req.query,
+            stage: req.baseUrl ? req.baseUrl : '/',
+            Host: req.hostname,
+            requestContext: ( req.requestContext ) ? req.requestContext : {},
+            files: req.files,
+            session: req.session,
+        };
+        event.requestContext.requestTimeEpoch = new Date().getTime();
+        const context = {
+            succeed: (msg) => {
+                console.log('succeed called');
+                return_response(res, msg);
+            },
+            fail: (error) => {
+                console.log('failed called');
+                return_error(res, error);
+            },
+            req: req,
+            res: res,
+            swagger: req.swagger
+        };
+        res.setHeader('Transfer-Encoding', 'chunked' );
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        func(event, res, context)
+        .catch(err =>{
+            console.log('error throwed:', err);
+            return_error(res, err);
+        });
+        return;
+      }else
       if( res.func_type == 'express'){
-        func(req, res);
+        func(req, res)
+        .catch(err =>{
+            console.log('error throwed:', err);
+            return_error(res, err);
+        });
         return;
       }else
       if( res.func_type == 'normal' ){
@@ -417,6 +477,7 @@ function routing(req, res) {
               return_error(res, error);
           },
           req: req,
+          res: res,
           swagger: req.swagger
       };
 
