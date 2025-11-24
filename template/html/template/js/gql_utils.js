@@ -44,7 +44,6 @@ async function do_gql_query(input){
     token: input.token,
     api_key: input.api_key
   };
-  console.log(gql_input);
   var json = await do_http(gql_input);
   if( json.errors )
     throw json.errors;
