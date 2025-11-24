@@ -36,15 +36,28 @@ async function do_gql_query(input){
     if( input.variables )
       body.variables = input.variables;
   }
-  var gql_input = {
-    url: input.url,
-    qs: input.qs,
-    body: body,
-    headers: input.headers,
-    token: input.token,
-    api_key: input.api_key
-  };
-  var json = await do_http(gql_input);
+  const headers = new Headers();
+  headers.append("Content-Type", "application/json");
+  if( input.headers ){
+    for( const key of Object.keys(input.headers))
+      headers.append(key, input.headers[key]);
+  }
+  if( input.token )
+    headers.append("Authorization", "Bearer " + input.token);
+  if( input.api_key )
+    headers.append("x-api-key", input.api_key);
+
+  const params = new URLSearchParams(input.qs);
+  var params_str = params.toString();
+  var postfix = (params_str == "") ? "" : ((input.url.indexOf('?') >= 0) ? ('&' + params_str) : ('?' + params_str));
+
+  var response = await fetch(input.url + postfix, {
+    method: "POST",
+    body: JSON.stringify(body),
+    headers: headers,
+    cache: "no-store"
+  });
+  var json = await response.json();
   if( json.errors )
     throw json.errors;
   return json.data;
