@@ -5,7 +5,7 @@ function gql_isString(obj) {
 };
 
 function gql_templ(strings, ...keys) {
-  return (function(...values) {
+  return (function(values) {
     var result = [strings[0]];
     keys.forEach(function(key, i) {
       var value = values[key];
@@ -26,23 +26,25 @@ function gql_escape(str){
 async function do_gql_query(input){
   var body;  
   if( input.exps instanceof Function ){
-    const args = Array.isArray(input.variables) ? input.variables : [];
     body = {
-      query: input.exps(...args)
+      query: input.exps(input.variables)
     };
   }else{
     body = {
       query: input.exps,
-      variables: input.variables
     };
+    if( input.variables )
+      body.variables = input.variables;
   }
   var gql_input = {
     url: input.url,
     qs: input.qs,
     body: body,
+    headers: input.headers,
     token: input.token,
     api_key: input.api_key
   };
+  console.log(gql_input);
   var json = await do_http(gql_input);
   if( json.errors )
     throw json.errors;
