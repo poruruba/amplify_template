@@ -59,7 +59,7 @@ if( fs.existsSync(fname) ){
       const paths = swagger.get('paths');
       paths.items.forEach(docPath =>{
         docPath.value.items.forEach(docMethod =>{
-          if( docMethod.key.value != 'get' && docMethod.key.value != 'post' && docMethod.key.value != 'head' )
+          if( docMethod.key.value != 'get' && docMethod.key.value != 'post' && docMethod.key.value != 'put' && docMethod.key.value != 'head' )
             return;
 
           let options = parse_swagger_method(docMethod);
@@ -134,7 +134,7 @@ function parse_swagger_yaml(swagger, folder, folder_name)
   const paths = swagger.get('paths');
   paths.items.forEach(docPath =>{
     docPath.value.items.forEach(docMethod =>{
-      if (docMethod.key.value != 'get' && docMethod.key.value != 'post' && docMethod.key.value != 'head')
+      if (docMethod.key.value != 'get' && docMethod.key.value != 'post' && docMethod.key.value != 'put' && docMethod.key.value != 'head')
         return;
 
       let options = parse_swagger_method(docMethod);
@@ -259,6 +259,10 @@ async function process_swagger_method(path, folder, options)
           router.post(path, preprocess(options, postprocess), nextfunc);
           break;
         }
+        case 'put': {
+          router.put(path, preprocess(options, postprocess), nextfunc);
+          break;
+        }
         case 'head': {
           router.head(path, preprocess(options, postprocess), nextfunc);
           break;
@@ -272,6 +276,10 @@ async function process_swagger_method(path, folder, options)
         }
         case 'post': {
           router.post(path, jsonParser, preprocess(options, postprocess), nextfunc);
+          break;
+        }
+        case 'put': {
+          router.put(path, jsonParser, preprocess(options, postprocess), nextfunc);
           break;
         }
         case 'head': {
@@ -372,6 +380,18 @@ function preprocess(options, postprocess){
           console.error(err);
         next();
       });
+    }else
+    // binary(application/octet-stream)の処理    
+    if( options.content_type == 'application/octet-stream'){
+      let upload = express.raw({
+        type: 'application/octet-stream',
+        limit: MAX_DATA_SIZE
+      });
+      upload(req, res, function(err){
+        if(err)
+          console.error(err);
+        next();
+      });
     }else{
       next();
     }
@@ -399,7 +419,7 @@ function routing(req, res) {
       if( res.func_type == 'normal' || res.func_type == 'stream'){
           event = {
               headers: req.headers,
-              body: JSON.stringify(req.body),
+              body: Buffer.isBuffer(req.body) ? req.body : JSON.stringify(req.body),
               path: req.path,
               httpMethod: req.method,
               queryStringParameters: req.query,
