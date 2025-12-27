@@ -20,7 +20,7 @@ var vue_options = {
     },
     mounted: async function(){
         proc_load();
-
+/*
         try{
             var first = false;
             var apikey = localStorage.getItem('api_key');
@@ -42,6 +42,7 @@ var vue_options = {
         }catch(error){
             console.error(error);
         }
+*/
     }
 };
 vue_add_data(vue_options, { progress_title: '' }); // for progress-dialog
