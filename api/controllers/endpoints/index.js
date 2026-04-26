@@ -10,6 +10,7 @@ const DEFAULT_HANDLER = "handler";
 
 const swagger_utils = require(HELPER_BASE + 'swagger_utils');
 const fs = require('fs');
+const yaml = require('yaml');
 
 const SWAGGER_DEFAULT_BASE = THIS_BASE_PATH + '/api/swagger/';
 const CONTROLLERS_BASE = THIS_BASE_PATH + '/api/controllers/';
@@ -20,6 +21,7 @@ const UDP_TARGET_FNAME = "udp.json";
 const MQTT_TARGET_FNAME = "mqtt.json";
 const WS_TARGET_FNAME = "ws.json";
 const WSC_TARGET_FNAME = "wsc.json";
+const MCP_TARGET_FNAME = "mcp.yaml";
 const SWAGGER_TARGET_FNAME = "swagger.yaml";
 const PUBLIC_FOLDER = process.env.THIS_BASE_PATH + "/public/";
 const API_KEY = process.env.API_KEY || "12345678";
@@ -84,6 +86,7 @@ exports.handler = async (event, context, callback) => {
       udp: [],
       ws: [],
       wsc: [],
+      mcp: [],
     };
 
     const folders = fs.readdirSync(CONTROLLERS_BASE);
@@ -200,6 +203,35 @@ exports.handler = async (event, context, callback) => {
           }
         }
 
+        root = endpoints.mcp;
+        fname = CONTROLLERS_BASE + folder + "/" + MCP_TARGET_FNAME;
+        if (fs.existsSync(fname)){
+          const stats_file = fs.statSync(fname);
+          if (stats_file.isFile()){
+            const mcp = yaml.parseDocument(fs.readFileSync(fname, 'utf-8'));
+            const paths = mcp.get('paths');
+            paths.items.forEach(docPath =>{
+              const path = docPath.key.value;
+              docPath.value.items.forEach(docMethod =>{
+                // method=postのみ
+                if (docMethod.key.value != 'post')
+                  return;
+
+                let handler = DEFAULT_HANDLER;
+                const docHandler = docMethod.value.items.filter(item => item.key.value == 'x-handler');
+                if (docHandler.length == 1)
+                  handler = docHandler[0].value.value;
+                   
+                const item = {
+                  operationId: folder,
+                  path: path,
+                  handler: handler,
+                };
+                root.push(item);
+              });
+            });
+          }
+        }        
       } catch (error) {
         console.log(error);
       }
