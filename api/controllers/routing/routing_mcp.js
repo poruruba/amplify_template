@@ -5,6 +5,7 @@ const MAX_DATA_SIZE = process.env.MAX_DATA_SIZE || '1mb';
 const CONTROLLERS_BASE = THIS_BASE_PATH + '/api/controllers/';
 
 const TARGET_FNAME = "mcp.yaml";
+const DEFAULT_HANDLER = "handler";
 
 const { StreamableHTTPServerTransport  } = require('@modelcontextprotocol/sdk/server/streamableHttp.js');
 const fs = require('fs');
@@ -49,7 +50,7 @@ function parse_mcp_yaml(mcp, folder)
       if (docMethod.key.value != 'post')
         return;
 
-      let handler = "handler";
+      let handler = DEFAULT_HANDLER;
       const docHandler = docMethod.value.items.filter(item => item.key.value == 'x-handler');
       if (docHandler.length == 1)
         handler = docHandler[0].value.value;
