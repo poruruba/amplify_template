@@ -40,20 +40,26 @@ function parse_cron_json(defs, folder, folder_name) {
     const handler = item.handler || DEFAULT_HANDLER;
     const proc = require(folder)[handler];
 
-    if( !item.enable )
-      return;
-
     if( item.onetime ){
       try{
-        proc(item.param);
+        proc(item.param)
+        .catch(error => {
+          console.error(error);
+        });
       }catch(error){
         console.error(error);
       }
     }
 
+    if( !item.enable )
+      return;
+
     cron.schedule(item.schedule, () => {
       try{
-        proc(item.param);
+        proc(item.param)
+        .catch(error =>{
+          console.error(error);
+        });
       }catch(error){
         console.error(error);
       }
