@@ -73,6 +73,7 @@ const methods_bootstrap = {
     make_random: function(max) {
         return Math.floor(Math.random() * (max + 1));
     },
+    
     toLocaleString: function(tim){
         return new Date(tim).toLocaleString();
     },
@@ -81,7 +82,14 @@ const methods_bootstrap = {
     },
     toLocaleTimeString: function(tim){
         return new Date(tim).toLocaleTimeString();
-    }
+    },
+    
+    config_apikey_open: function(){
+        this.dialog_open('#config_apikey_dialog');
+    },
+    config_apikey_close: function(){
+        this.dialog_close('#config_apikey_dialog');
+    },
 };
 
 const mixins_bootstrap = {
