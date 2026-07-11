@@ -89,7 +89,7 @@ const methods_bootstrap = {
     },
     config_apikey_close: function(){
         this.dialog_close('#config_apikey_dialog');
-    },
+    }
 };
 
 const mixins_bootstrap = {
