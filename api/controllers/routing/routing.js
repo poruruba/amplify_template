@@ -344,7 +344,7 @@ function preprocess(options, postprocess){
             }
           };
           const claims = {
-            claims : decode,
+            claims : decoded,
             issuer: decoded.iss,
             id: decoded.sub,
             email: decoded.email
