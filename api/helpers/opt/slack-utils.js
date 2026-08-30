@@ -35,6 +35,24 @@ class SlackUtils{
         });
     }
 
+    async downloadFile(file){
+        return fetch(file.url_private, {
+            method: "GET",
+            headers: {
+                'Authorization': `Bearer ${this.web.token}`
+            }
+        })
+        .then((response) => {
+            if (!response.ok)
+                throw new Error('status is not 200');
+            return response;
+        });
+    }
+
+    async uploadFile(params){
+        return this.web.files.uploadV2(params);
+    }
+
     postMessage(message){
         return this.web.chat.postMessage(message);
     }
@@ -142,7 +160,10 @@ class SlackUtils{
 
             var handler = this.map.get(type);
             if( handler )
-                handler(body, this.web);
+                handler(body, this.web)
+                .catch(error =>{
+                    callback(error);
+                });
             else
                 console.log(type + ' is not defined.');
 
